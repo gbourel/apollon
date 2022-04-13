@@ -1,0 +1,11 @@
+{
+  "name": "apollon",
+  "version": "0.1.0",
+  "private": false,
+  "description": "",
+  "license": "AGPL-3.0",
+  "author": "GB",
+  "devDependencies": {
+    "tailwindcss": "^3.0.23"
+  }
+}
