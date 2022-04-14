@@ -5,7 +5,6 @@ let output = [];
 
 document.getElementById('version').textContent = VERSION;
 
-
 function displaySuccess() {
   const successOverlay = document.getElementById('overlay');
   successOverlay.classList.remove('hidden');
@@ -38,7 +37,6 @@ function runit() {
       return Sk.importMainWithBody("<stdin>", false, prog, true);
   });
   myPromise.then(function(mod) {
-    console.info('output', output);
     if(output.length === 1 && sha1(output[0]) === exercise.solution){
       displaySuccess();
       console.info('Ok')
@@ -55,7 +53,7 @@ function init(){
   const ta = document.getElementById('pythonsrc');
   const btn = document.getElementById('runbtn');
   title.innerHTML = exercise.title;
-  instruction.innerHTML = exercise.instruction;
+  instruction.innerHTML = marked.parse(exercise.instruction);
   ta.value = exercise.proposals;
   btn.addEventListener('click', runit);
 }
@@ -65,12 +63,6 @@ if ( window.location !== window.parent.location ) {
   // let elt = document.getElementById('title-header');
   // elt.style.display = 'none';
 }
-
-val = []
-for(let i = 0; i < 126; i++){
-  val.push(Math.round(Math.random() * 800))
-}
-console.info(JSON.stringify(val))
 
 // console.info(sha1('test'))
 const exercises = {
