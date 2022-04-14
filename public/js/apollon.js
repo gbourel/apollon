@@ -31,7 +31,7 @@ function runit() {
     output:outf,
     read:builtinRead
   });
-  prog = 'import nsix\n' + prog;
+  prog = 'import data\n' + prog;
   (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
   output = [];
   var myPromise = Sk.misceval.asyncToPromise(function() {
@@ -79,7 +79,7 @@ const exercises = {
     'instruction': "La variable `p` est une variable de type dictionnaire : afficher la valeur de la clef \"Metier\".\n" +
     "\n" +
     "_L'affichage doit être fait à l'aide de la fonction `print`._",
-    'proposals': 'p = nsix.personne()',
+    'proposals': 'p = data.personne()',
     'solution': '1f21d635886a46f94cb53e7baeeff638fbca53b8'
   },
   'c9b5438d85e07b8': {
