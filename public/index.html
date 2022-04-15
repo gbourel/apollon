@@ -1,9 +1,11 @@
+<!DOCTYPE html>
 <html>
 <head>
+  <link rel="stylesheet" href="lib/katex/katex.min.css">
   <link rel="stylesheet" href="./style.css">
 </head>
 <body class="m-4 bg-slate-600 text-white">
-  <header class="p-2">
+  <header class="p-4 bg-slate-800 bg-opacity-50 rounded-t-lg">
     <h3 class="text-2xl">
       <img src="img/python.png" alt="Logo Python" class="inline-block" style="height: 32px; margin-top: -4px;">
       <span id="title"></span>
@@ -25,16 +27,21 @@
     <img src="img/success.svg">
     <div class="done">
       <div class="done-msg">Bravo, un grand succès !</div>
-      <div class="done-sub">Appuyer sur valider pour continuer.</div>
+      <div class="done-sub">
+        <span class="nsix hidden">Appuyer sur valider pour continuer.</span>
+        <button id="nextbtn" class="standalone hidden bg-blue-500 rounded px-2 text-slate-100" type="button">Au suivant</button>
+      </div>
     </div>
   </div>
 
-  <script src="js/skulpt.es5.min.js" type="text/javascript"></script>
-  <script src="js/skulpt-stdlib.js" type="text/javascript"></script>
-  <script src="js/sha1.js" type="text/javascript"></script>
-  <script src="js/sha256.js" type="text/javascript"></script>
-  <script src="js/marked.min.js"></script>
+  <script src="lib/skulpt/skulpt.es5.min.js" type="text/javascript"></script>
+  <script src="lib/skulpt/skulpt-stdlib.js" type="text/javascript"></script>
+  <script src="lib/sha1.js" type="text/javascript"></script>
+  <script src="lib/sha256.js" type="text/javascript"></script>
+  <script src="lib/marked.min.js"></script>
   <script async src="js/apollon.js"></script>
+  <script defer src="lib/katex/katex.min.js"></script>
+  <script defer src="lib/katex/auto-render.min.js"></script>
 </body>
 
 </html>

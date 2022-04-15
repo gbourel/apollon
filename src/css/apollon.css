@@ -10,3 +10,75 @@ code {
   font-size: 1rem;
   font-style: normal;
 }
+
+/* Background */
+
+body {
+	background: linear-gradient(-45deg, #475569, #343E4C, #476669, #3a380f);
+	background-size: 400% 400%;
+	animation: gradient 120s ease infinite;
+	height: 100vh;
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+/* Katex */
+
+.katex {
+  font-size: 1.4rem;
+}
+
+/* Success overlay  */
+
+#overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #40404090;
+}
+#overlay img {
+  position: fixed;
+  width: 64px;
+  top: 50vh;
+  left: 50vw;
+  margin-top: -72px;
+  margin-left: -32px;
+  z-index: 10;
+}
+#overlay .done {
+  position: fixed;
+  width: 300px;
+  height: 128px;
+  margin-left: -150px;
+  margin-top: -50px;
+  top: 50vh;
+  left: 50vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #FFFFFF;
+  text-align: center;
+  border: 4px solid #20A020;
+  border-radius: 12px;
+}
+#overlay .done .done-msg, #overlay .done .done-sub {
+  color: #353;
+  line-height: 32px;
+}
+#overlay .done .done-sub {
+  color: #555;
+  font-size: small;
+  font-style: italic;
+}
