@@ -1,6 +1,7 @@
 (function (){
 
 const VERSION = 'v0.1.0';
+let _pythonEditor = null; // Codemirror editor
 let _output = [];     // Current script stdout
 let _nsix = false;    // If embedded in a nsix challenge
 // List of local exercises
@@ -18,19 +19,19 @@ const _exercises = {
     'instruction': "Modifier le programme Python ci-dessous pour afficher le résultat de $a^5 + 79$.\n" +
     "<br><br>" +
     "_L'affichage doit être fait à l'aide de la fonction `print`._",
-    'proposals': 'a = 7',
+    'proposals': 'a = 7\nprint(a)',
     'solution': '84b1c1cf45ea7a79a126b663df760e034264dae6'
   },
   'f41955547593c46': {
-    'title': 'Manipuler un tableau',
+    'title': 'Parcourir un tableau',
     'instruction': "Modifier le programme Python ci-dessous pour afficher la somme des valeurs du tableau `tab`.\n" +
     "<br><br>" +
     "_L'affichage doit être fait à l'aide de la fonction `print`._",
-    'proposals': 'tab = [234, 654, 612, 728, 546, 414, 97, 343, 314, 823, 967, 642, 445, 721, 910, 796, 407, 529, 184, 430, 178, 239, 135, 299, 457, 757, 540, 369, 153, 667, 493, 782, 538, 114, 644, 427, 717, 381, 219, 41, 238, 706, 751, 668, 682, 166, 784, 398, 335, 789, 87, 644, 715, 468, 220, 501, 222, 628, 192, 114, 65, 785, 55, 700, 753, 112, 393, 454]',
-    'solution': '84b1c1cf45ea7a79a126b663df760e034264dae6'
+    'proposals': 'tab = data.tableau()',
+    'solution': '0e24cd7267d155500f95a2000cd010da32f7627d'
   }
 }
-let _exerciseIdx = 1;  // Current exercise index
+let _exerciseIdx = 0;  // Current exercise index
 let _exercise = null;  // Current exercise
 
 document.getElementById('version').textContent = VERSION;
@@ -44,13 +45,14 @@ function displaySuccess() {
 function loadexercise() {
   const title = document.getElementById('title');
   const instruction = document.getElementById('instruction');
-  const ta = document.getElementById('pythonsrc');
 
   _exercise = _exercises[Object.keys(_exercises)[_exerciseIdx]];
 
-  title.innerHTML = _exercise.title;
-  instruction.innerHTML = marked.parse(_exercise.instruction);
-  ta.value = _exercise.proposals;
+  if (_exercise) {
+    title.innerHTML = _exercise.title;
+    instruction.innerHTML = marked.parse(_exercise.instruction);
+    _pythonEditor.setValue(_exercise.proposals);
+  }
 }
 
 // Loads next exercise
@@ -63,6 +65,13 @@ function nextExercise() {
   loadexercise();
 }
 
+function onCompletion(mod) {
+  if(_output.length === 1 && sha1(_output[0]) === _exercise.solution){
+    displaySuccess();
+    console.info('Ok')
+  }
+}
+
 // Python script stdout
 function outf(text) {
   _output.push(text.trim());
@@ -70,7 +79,6 @@ function outf(text) {
 }
 // Load python modules
 function builtinRead(x) {
-  console.info('Read', x)
   if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
     throw "File not found: '" + x + "'";
   return Sk.builtinFiles["files"][x];
@@ -78,7 +86,7 @@ function builtinRead(x) {
 
 // Run python script
 function runit() {
-  var prog = document.getElementById('pythonsrc').value;
+  var prog = _pythonEditor.getValue();
   var mypre = document.getElementById('output');
   mypre.innerHTML = '';
   Sk.pre = 'output';
@@ -92,12 +100,7 @@ function runit() {
   var myPromise = Sk.misceval.asyncToPromise(function() {
       return Sk.importMainWithBody("<stdin>", false, prog, true);
   });
-  myPromise.then(function(mod) {
-    if(_output.length === 1 && sha1(_output[0]) === _exercise.solution){
-      displaySuccess();
-      console.info('Ok')
-    }
-  },
+  myPromise.then(onCompletion,
   function(err) {
     console.log(err.toString());
   });
@@ -137,6 +140,14 @@ function init(){
   });
 }
 
+// Create codemirror editor
+_pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
+  value: "def square(a):\n  return a ** 2\n",
+  mode:  "python",
+  lineNumbers: true,
+  theme: 'monokai'
+});
+
 // if in iframe (i.e. nsix challenge)
 _nsix = window.location !== window.parent.location;
 const elts = document.querySelectorAll(_nsix ? '.nsix' : '.standalone');
@@ -144,6 +155,7 @@ for (let e of elts) {
   e.classList.remove('hidden');
 }
 
+// Override Katex delimiters
 document.addEventListener("DOMContentLoaded", function() {
   renderMathInElement(document.getElementById('instruction'), {
     delimiters: [

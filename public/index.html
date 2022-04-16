@@ -2,9 +2,11 @@
 <html>
 <head>
   <link rel="stylesheet" href="lib/katex/katex.min.css">
+  <link rel="stylesheet" href="lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="lib/codemirror/monokai.css">
   <link rel="stylesheet" href="./style.css">
 </head>
-<body class="m-4 bg-slate-600 text-white">
+<body class="p-4 bg-slate-600 text-white">
   <header class="p-4 bg-slate-800 bg-opacity-50 rounded-t-lg">
     <h3 class="text-2xl">
       <img src="img/python.png" alt="Logo Python" class="inline-block" style="height: 32px; margin-top: -4px;">
@@ -14,9 +16,9 @@
     <span id="version" class="hidden"></span>
   </header>
   <main class="md:flex">
-    <textarea id="pythonsrc" cols="40" rows="10" spellcheck="false"
-      class="w-full md:w-1/2 font-mono bg-gray-900 rounded text-green-400 border-2 border-zinc-500 p-4 resize-none">
-    </textarea>
+    <div id="pythonsrc"
+      class="w-full md:w-1/2 font-mono bg-gray-900 rounded text-green-400 border-2 border-zinc-500 resize-none">
+    </div>
     <div class="w-full md:w-1/2 font-mono border-2 bg-stone-100 text-green-900 border-zinc-500 p-2" id="output"></div>
   </main>
   <button id="runbtn" class="bg-blue-500 rounded my-2 p-2" type="button">Run</button>
@@ -42,6 +44,8 @@
   <script async src="js/apollon.js"></script>
   <script defer src="lib/katex/katex.min.js"></script>
   <script defer src="lib/katex/auto-render.min.js"></script>
+  <script defer src="lib/codemirror/codemirror.js"></script>
+  <script defer src="lib/codemirror/python.js"></script>
 </body>
 
 </html>

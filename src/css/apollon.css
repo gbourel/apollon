@@ -34,7 +34,7 @@ body {
 
 /* Katex */
 
-.katex {
+span.katex {
   font-size: 1.4rem;
 }
 
