@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
+  <title>Apollon</title>
   <link rel="stylesheet" href="lib/katex/katex.min.css">
   <link rel="stylesheet" href="lib/codemirror/codemirror.css">
   <link rel="stylesheet" href="lib/codemirror/monokai.css">
@@ -19,7 +21,7 @@
     <div id="pythonsrc"
       class="w-full md:w-1/2 font-mono bg-gray-900 rounded text-green-400 border-2 border-zinc-500 resize-none">
     </div>
-    <div class="w-full md:w-1/2 font-mono border-2 bg-stone-100 text-green-900 border-zinc-500 p-2" id="output"></div>
+    <div class="w-full md:w-1/2 font-mono text-sm border-2 bg-stone-100 text-green-900 border-zinc-500 p-2" id="output"></div>
   </main>
   <button id="runbtn" class="bg-blue-500 rounded my-2 p-2" type="button">Run</button>
   <!-- If you want turtle graphics include a canvas -->
@@ -41,10 +43,10 @@
   <script src="lib/sha1.js" type="text/javascript"></script>
   <script src="lib/sha256.js" type="text/javascript"></script>
   <script src="lib/marked.min.js"></script>
+  <script src="lib/codemirror/codemirror.js"></script>
+  <script src="lib/codemirror/python.js"></script>
   <script defer src="lib/katex/katex.min.js"></script>
   <script defer src="lib/katex/auto-render.min.js"></script>
-  <script defer src="lib/codemirror/codemirror.js"></script>
-  <script defer src="lib/codemirror/python.js"></script>
   <script async src="js/apollon.js"></script>
 </body>
 

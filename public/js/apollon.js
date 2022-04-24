@@ -1,36 +1,13 @@
 (function (){
 
-const VERSION = 'v0.1.0';
+const VERSION = 'v0.2.1';
 let _pythonEditor = null; // Codemirror editor
 let _output = [];     // Current script stdout
 let _nsix = false;    // If embedded in a nsix challenge
-// List of local exercises
-const _exercises = {
-  'e5b2f3a850b1e60': {
-    'title': 'Utilisation d\'une variable de type dictionnaire',
-    'instruction': "La variable `p` est une variable de type dictionnaire : afficher la valeur de la clef \"Metier\".\n" +
-    "<br><br>" +
-    "_L'affichage doit être fait à l'aide de la fonction `print`._",
-    'proposals': 'p = data.personne()',
-    'solution': '1f21d635886a46f94cb53e7baeeff638fbca53b8'
-  },
-  'c9b5438d85e07b8': {
-    'title': 'Modifier un programme',
-    'instruction': "Modifier le programme Python ci-dessous pour afficher le résultat de $a^5 + 79$.\n" +
-    "<br><br>" +
-    "_L'affichage doit être fait à l'aide de la fonction `print`._",
-    'proposals': 'a = 7\nprint(a)',
-    'solution': '84b1c1cf45ea7a79a126b663df760e034264dae6'
-  },
-  'f41955547593c46': {
-    'title': 'Parcourir un tableau',
-    'instruction': "Modifier le programme Python ci-dessous pour afficher la somme des valeurs du tableau `tab`.\n" +
-    "<br><br>" +
-    "_L'affichage doit être fait à l'aide de la fonction `print`._",
-    'proposals': 'tab = data.tableau()',
-    'solution': '0e24cd7267d155500f95a2000cd010da32f7627d'
-  }
-}
+
+const lcmsUrl = 'http://localhost:9976/lcms/python';
+
+let _exercises = [];   // All exercises
 let _exerciseIdx = 0;  // Current exercise index
 let _exercise = null;  // Current exercise
 
@@ -42,11 +19,11 @@ function displaySuccess() {
   successOverlay.classList.remove('hidden');
 }
 
-function loadexercise() {
+function displayExercise() {
   const title = document.getElementById('title');
   const instruction = document.getElementById('instruction');
 
-  _exercise = _exercises[Object.keys(_exercises)[_exerciseIdx]];
+  _exercise = _exercises[_exerciseIdx];
 
   if (_exercise) {
     title.innerHTML = _exercise.title;
@@ -62,7 +39,7 @@ function nextExercise() {
   var outputpre = document.getElementById('output');
   outputpre.innerHTML = ''
   _exerciseIdx++;
-  loadexercise();
+  displayExercise();
 }
 
 function onCompletion(mod) {
@@ -75,7 +52,7 @@ function onCompletion(mod) {
 // Python script stdout
 function outf(text) {
   _output.push(text.trim());
-  document.getElementById('output').innerHTML += text + '<br>';
+  document.getElementById('output').innerHTML += `<div>${text}</div>`;
 }
 // Load python modules
 function builtinRead(x) {
@@ -103,6 +80,7 @@ function runit() {
   myPromise.then(onCompletion,
   function(err) {
     console.log(err.toString());
+    document.getElementById('output').innerHTML += `<div class="error">${err}</div>`;
   });
 }
 
@@ -111,42 +89,51 @@ function init(){
   const nextbtn = document.getElementById('nextbtn');
   let purl = new URL(window.location.href);
   if(purl && purl.searchParams) {
-    let challenge = purl.searchParams.get("challenge");
-    if(challenge !== null) {
-      if (_exercises[challenge]) {
-        _exercise = _exercises[challenge];
-      } else {
-        console.error(`Unknown exercise "${challenge}"`);
-      }
-    }
     let autostart = purl.searchParams.get("autostart");
     if(autostart !== null) {
       runit();
     }
   }
 
+  // Create codemirror editor
+  _pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
+    value: "def square(a):\n  return a ** 2\n",
+    mode:  "python",
+    lineNumbers: true,
+    theme: 'monokai'
+  });
+
   runbtn.addEventListener('click', runit);
   nextbtn.addEventListener('click', nextExercise);
 
-  loadexercise();
-
   // run script on CTRL + Enter shortcut
   document.addEventListener('keyup', evt => {
-    if(evt.target && evt.target.id === 'pythonsrc'
+    if(evt.target && evt.target.nodeName === 'TEXTAREA'
        && evt.key === 'Enter'
        && evt.ctrlKey && !evt.shiftKey && !evt.altKey) {
       runit();
     }
   });
-}
 
-// Create codemirror editor
-_pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
-  value: "def square(a):\n  return a ** 2\n",
-  mode:  "python",
-  lineNumbers: true,
-  theme: 'monokai'
-});
+  // const req = new Request(lcmsUrl);
+  // fetch(req).then(res => { return res.json(); })
+  // .then(data => {
+    // test data
+    let data = [{"id":"c9b5438d85e07b8","title":"Modifier un programme","instruction":"Modifier le programme Python ci-dessous pour afficher le résultat de $a^5 + 79$.\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":"a = 7\nprint(a)","solution":"84b1c1cf45ea7a79a126b663df760e034264dae6"},{"id":"e5b2f3a850b1e60","title":"Utilisation d'une variable de type dictionnaire","instruction":"La variable `p` est une variable de type dictionnaire : afficher la valeur de la clef \"Metier\".\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":"p = data.personne()","solution":"1f21d635886a46f94cb53e7baeeff638fbca53b8"},{"id":"f41955547593c46","title":"Parcourir un tableau","instruction":"Modifier le programme Python ci-dessous pour afficher la somme des valeurs du tableau `tab`.\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":"tab = data.tableau()","solution":"0e24cd7267d155500f95a2000cd010da32f7627d"}];
+    _exercises = data;
+    displayExercise();
+
+    renderMathInElement(document.getElementById('instruction'), {
+      delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+      ],
+      throwOnError : false
+    });
+  // });
+}
 
 // if in iframe (i.e. nsix challenge)
 _nsix = window.location !== window.parent.location;
@@ -155,24 +142,6 @@ for (let e of elts) {
   e.classList.remove('hidden');
 }
 
-// Override Katex delimiters
-document.addEventListener("DOMContentLoaded", function() {
-  renderMathInElement(document.getElementById('instruction'), {
-    delimiters: [
-        {left: '$$', right: '$$', display: true},
-        {left: '$', right: '$', display: false},
-        {left: '\\(', right: '\\)', display: false},
-        {left: '\\[', right: '\\]', display: true}
-    ],
-    throwOnError : false
-  });
-});
-
 init();
-
-// DEBUG
-setTimeout(() => {
-  runit();
-}, 500);
 
 })();

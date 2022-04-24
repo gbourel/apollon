@@ -10,6 +10,10 @@ code {
   font-size: 1rem;
   font-style: normal;
 }
+.error {
+  color: #EE4444;
+  font-weight: bold;
+}
 
 /* Background */
 
