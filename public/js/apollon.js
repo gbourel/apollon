@@ -222,10 +222,6 @@ function init(){
     _exercises = data;
     displayExercise();
 
-    setTimeout(() => {
-      runit();
-    }, 500);
-
     renderMathInElement(document.getElementById('instruction'), {
       delimiters: [
           {left: '$$', right: '$$', display: true},
