@@ -1,22 +1,40 @@
 (function (){
 
-const VERSION = 'v0.2.1';
+const VERSION = 'v0.3.0';
+document.getElementById('version').textContent = VERSION;
+
 let _pythonEditor = null; // Codemirror editor
 let _output = [];     // Current script stdout
 let _nsix = false;    // If embedded in a nsix challenge
 
-const lcmsUrl = 'http://localhost:9976/lcms/python';
+const NSIX_URL = 'https://app.nsix.fr';
+const LCMS_URL = 'https://webamc.nsix.fr/lcms/python';
 
 let _exercises = [];   // All exercises
 let _exerciseIdx = 0;  // Current exercise index
 let _exercise = null;  // Current exercise
+let _tests = [];       // Tests for current exercise
+let _over = false; // current run programme is terminated
 
-document.getElementById('version').textContent = VERSION;
 
 // Callback on exercise achievement
 function displaySuccess() {
   const successOverlay = document.getElementById('overlay');
   successOverlay.classList.remove('hidden');
+}
+
+function loadTestsCSV(csv) {
+  _tests = [];
+  let lines = csv.split('\n');
+  for (let line of lines) {
+    let val = line.split(';');
+    if (val.length > 1) {
+      _tests.push({
+        'python': val[0],
+        'value': val[1]
+      })
+    }
+  }
 }
 
 function displayExercise() {
@@ -26,9 +44,12 @@ function displayExercise() {
   _exercise = _exercises[_exerciseIdx];
 
   if (_exercise) {
-    title.innerHTML = _exercise.title;
+    loadTestsCSV(_exercise.tests);
+    title.innerHTML = _exercise.title || 'Entrainement';
     instruction.innerHTML = marked.parse(_exercise.instruction);
-    _pythonEditor.setValue(_exercise.proposals);
+    if(_exercise.proposals && _exercise.proposals.length > 0) {
+      _pythonEditor.setValue(_exercise.proposals);
+    }
   }
 }
 
@@ -43,16 +64,36 @@ function nextExercise() {
 }
 
 function onCompletion(mod) {
-  if(_output.length === 1 && sha1(_output[0]) === _exercise.solution){
-    displaySuccess();
-    console.info('Ok')
+  if(_tests.length > 0 && _tests.length === _output.length) {
+    let ok = true
+    for (let i = 0 ; i < _tests.length; i++) {
+      if(_tests[i].value !== _output[i]) {
+        ok = false;
+      }
+    }
+    if (ok) {
+      displaySuccess();
+      if(parent) {
+        const answer = sha256(_output);
+        parent.window.postMessage({
+          'answer': answer,
+          'from': 'pix'
+        }, '*');
+      }
+    }
   }
 }
 
 // Python script stdout
 function outf(text) {
-  _output.push(text.trim());
-  document.getElementById('output').innerHTML += `<div>${text}</div>`;
+  if(text.startsWith('### END_OF_USER_INPUT ###')) {
+    return _over = true;
+  }
+  if(_over === false) {
+    document.getElementById('output').innerHTML += `<div>${text}</div>`;
+  } else {
+    _output.push(text.trim());
+  }
 }
 // Load python modules
 function builtinRead(x) {
@@ -68,12 +109,17 @@ function runit() {
   mypre.innerHTML = '';
   Sk.pre = 'output';
   Sk.configure({
-    output:outf,
-    read:builtinRead
+    output: outf,
+    read: builtinRead,
+    __future__: Sk.python3
   });
-  prog = 'import data\n' + prog;
-  (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
+  prog += "\nprint('### END_OF_USER_INPUT ###')";
+  for (let t of _tests) {
+    prog += "\n" + t.python;
+  }
+  // (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
   _output = [];
+  _over = false;
   var myPromise = Sk.misceval.asyncToPromise(function() {
       return Sk.importMainWithBody("<stdin>", false, prog, true);
   });
@@ -82,6 +128,37 @@ function runit() {
     console.log(err.toString());
     document.getElementById('output').innerHTML += `<div class="error">${err}</div>`;
   });
+}
+
+function loadUser(cb) {
+  if(document.cookie) {
+    const meUrl = NSIX_URL + '/api/users/me';
+    const name = 'ember_simple_auth-session'
+    let cookies = decodeURIComponent(document.cookie).split(';');
+    cookies.forEach(c => {
+      let idx = c.indexOf(name);
+      if(idx === 0) {
+        let json = JSON.parse(c.substring(name.length + 1));
+        let token = json.authenticated.access_token;
+        const req = new Request(meUrl);
+        fetch(req, {
+          'headers': {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }).then(res => {
+          return res.json();
+        }).then(data => {
+          let user = data.data.attributes;
+          if(user) {
+            user.id = data.data.id;
+          }
+          cb(user);
+        });
+      }
+    })
+  }
 }
 
 function init(){
@@ -102,12 +179,14 @@ function init(){
     lineNumbers: true,
     theme: 'monokai'
   });
+  _pythonEditor.setValue(sessionStorage.getItem('prog'));
 
   runbtn.addEventListener('click', runit);
   nextbtn.addEventListener('click', nextExercise);
 
   // run script on CTRL + Enter shortcut
   document.addEventListener('keyup', evt => {
+    sessionStorage.setItem('prog', _pythonEditor.getValue());
     if(evt.target && evt.target.nodeName === 'TEXTAREA'
        && evt.key === 'Enter'
        && evt.ctrlKey && !evt.shiftKey && !evt.altKey) {
@@ -115,13 +194,35 @@ function init(){
     }
   });
 
-  // const req = new Request(lcmsUrl);
-  // fetch(req).then(res => { return res.json(); })
-  // .then(data => {
+  loadUser((user) => {
+    if(user) {
+      let elt = document.getElementById('username');
+      elt.innerHTML = user["first-name"];
+      elt.classList.remove('hidden');
+    } else {
+      document.getElementById('login').classList.remove('hidden');
+    }
+  });
+
+  const req = new Request(LCMS_URL);
+  fetch(req).then(res => { return res.json(); })
+  .then(data => {
     // test data
-    let data = [{"id":"c9b5438d85e07b8","title":"Modifier un programme","instruction":"Modifier le programme Python ci-dessous pour afficher le résultat de $a^5 + 79$.\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":"a = 7\nprint(a)","solution":"84b1c1cf45ea7a79a126b663df760e034264dae6"},{"id":"e5b2f3a850b1e60","title":"Utilisation d'une variable de type dictionnaire","instruction":"La variable `p` est une variable de type dictionnaire : afficher la valeur de la clef \"Metier\".\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":"p = data.personne()","solution":"1f21d635886a46f94cb53e7baeeff638fbca53b8"},{"id":"f41955547593c46","title":"Parcourir un tableau","instruction":"Modifier le programme Python ci-dessous pour afficher la somme des valeurs du tableau `tab`.\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":"tab = data.tableau()","solution":"0e24cd7267d155500f95a2000cd010da32f7627d"}];
+    // let data = [
+    //   {
+    //     "id":
+    //     "c9b5438d85e07b8","title":
+    //     "Modifier un programme","instruction":
+    //     "Modifier le programme Python ci-dessous pour afficher le résultat de $a^5 + 79$.\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":
+    //     "a = 7\nprint(a)","solution": "84b1c1cf45ea7a79a126b663df760e034264dae6"
+    //   },
+    //   {"id":"c9b5438d85e07b8","title":"Modifier un programme","instruction":"Modifier le programme Python ci-dessous pour afficher le résultat de $a^5 + 79$.\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":"a = 7\nprint(a)","solution":"84b1c1cf45ea7a79a126b663df760e034264dae6"},{"id":"e5b2f3a850b1e60","title":"Utilisation d'une variable de type dictionnaire","instruction":"La variable `p` est une variable de type dictionnaire : afficher la valeur de la clef \"Metier\".\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":"p = data.personne()","solution":"1f21d635886a46f94cb53e7baeeff638fbca53b8"},{"id":"f41955547593c46","title":"Parcourir un tableau","instruction":"Modifier le programme Python ci-dessous pour afficher la somme des valeurs du tableau `tab`.\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":"tab = data.tableau()","solution":"0e24cd7267d155500f95a2000cd010da32f7627d"}];
     _exercises = data;
     displayExercise();
+
+    setTimeout(() => {
+      runit();
+    }, 500);
 
     renderMathInElement(document.getElementById('instruction'), {
       delimiters: [
@@ -132,7 +233,7 @@ function init(){
       ],
       throwOnError : false
     });
-  // });
+  });
 }
 
 // if in iframe (i.e. nsix challenge)

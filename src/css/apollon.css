@@ -15,6 +15,8 @@ code {
   font-weight: bold;
 }
 
+/* Loading */
+
 /* Background */
 
 body {
@@ -36,10 +38,21 @@ body {
 	}
 }
 
+/* Version */
+
+#version {
+  position: fixed;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  font-size: small;
+  font-style: italic;
+  color: #AAA;
+}
+
 /* Katex */
 
 span.katex {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
 }
 
 /* Success overlay  */
