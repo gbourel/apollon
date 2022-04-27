@@ -179,7 +179,9 @@ function init(){
     lineNumbers: true,
     theme: 'monokai'
   });
-  _pythonEditor.setValue(sessionStorage.getItem('prog'));
+  if(sessionStorage.getItem('prog')) {
+    _pythonEditor.setValue(sessionStorage.getItem('prog'));
+  }
 
   runbtn.addEventListener('click', runit);
   nextbtn.addEventListener('click', nextExercise);
