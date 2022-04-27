@@ -8,5 +8,6 @@ Basé sur skulpt.
 
 ## TODO
 
- * Affichage Markdown des instructions
- * Katex pour math
+ * Programme dans sessionStorage
+ * User profile
+ * Save src in localStorage using exercise and user ids
