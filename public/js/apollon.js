@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.3.0';
+const VERSION = 'v0.3.1';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor
@@ -9,6 +9,8 @@ let _nsix = false;    // If embedded in a nsix challenge
 
 const NSIX_URL = 'https://app.nsix.fr';
 const LCMS_URL = 'https://webamc.nsix.fr/lcms/python';
+// const NSIX_URL = 'http://localhost:4200';
+// const LCMS_URL = 'http://localhost:9976/lcms/python';
 
 let _exercises = [];   // All exercises
 let _exerciseIdx = 0;  // Current exercise index
@@ -67,7 +69,7 @@ function onCompletion(mod) {
   if(_tests.length > 0 && _tests.length === _output.length) {
     let ok = true
     for (let i = 0 ; i < _tests.length; i++) {
-      if(_tests[i].value !== _output[i]) {
+      if(_tests[i].value.trim() !== _output[i].trim()) {
         ok = false;
       }
     }
@@ -133,12 +135,13 @@ function runit() {
 function loadUser(cb) {
   if(document.cookie) {
     const meUrl = NSIX_URL + '/api/users/me';
-    const name = 'ember_simple_auth-session'
+    const name = 'ember_simple_auth-session='
     let cookies = decodeURIComponent(document.cookie).split(';');
     cookies.forEach(c => {
       let idx = c.indexOf(name);
       if(idx === 0) {
-        let json = JSON.parse(c.substring(name.length + 1));
+        let value = c.substring(name.length);
+        let json = JSON.parse(value);
         let token = json.authenticated.access_token;
         const req = new Request(meUrl);
         fetch(req, {
@@ -174,7 +177,7 @@ function init(){
 
   // Create codemirror editor
   _pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
-    value: "def square(a):\n  return a ** 2\n",
+    value: "print('Hello world')",
     mode:  "python",
     lineNumbers: true,
     theme: 'monokai'
