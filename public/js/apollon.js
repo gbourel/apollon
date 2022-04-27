@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.3.1';
+const VERSION = 'v0.3.2';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor

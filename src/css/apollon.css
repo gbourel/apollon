@@ -15,7 +15,12 @@ code {
   font-weight: bold;
 }
 
-/* Loading */
+/* Markdown */
+
+ul {
+  margin-left: 1.5rem;
+  list-style-type: circle;
+}
 
 /* Background */
 
