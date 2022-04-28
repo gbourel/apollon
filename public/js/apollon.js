@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.3.3';
+const VERSION = 'v0.3.4';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor
@@ -66,14 +66,16 @@ function nextExercise() {
 }
 
 function onCompletion(mod) {
+  let failed = _tests.length;
   if(_tests.length > 0 && _tests.length === _output.length) {
-    let ok = true
+    failed = 0;
     for (let i = 0 ; i < _tests.length; i++) {
       if(_tests[i].value.trim() !== _output[i].trim()) {
         ok = false;
+        failed += 1;
       }
     }
-    if (ok) {
+    if (failed === 0) {
       displaySuccess();
       if(parent) {
         const answer = sha256(_output);
@@ -83,6 +85,13 @@ function onCompletion(mod) {
         }, '*');
       }
     }
+  }
+  if(failed > 0) {
+    let content = `Résultat : ${_tests.length} test`;
+    if(_tests.length > 1) { content += 's'; }
+    content += `, ${failed} échec`
+    if(failed > 1) { content += 's'; }
+    document.getElementById('output').innerHTML += `<div class="failed">${content}</div>`;
   }
 }
 
@@ -128,7 +137,11 @@ function runit() {
   myPromise.then(onCompletion,
   function(err) {
     console.log(err.toString());
-    document.getElementById('output').innerHTML += `<div class="error">${err}</div>`;
+    if(!_over) {
+      document.getElementById('output').innerHTML += `<div class="error">${err}</div>`;
+    } else {
+      onCompletion();
+    }
   });
 }
 

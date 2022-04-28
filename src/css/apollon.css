@@ -14,6 +14,11 @@ code {
   color: #EE4444;
   font-weight: bold;
 }
+.failed {
+  color: #eb9800;
+  font-weight: bold;
+  margin-top: 1rem;
+}
 
 /* Markdown */
 
