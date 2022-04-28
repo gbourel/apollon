@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.3.4';
+const VERSION = 'v0.3.5';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor
@@ -136,10 +136,14 @@ function runit() {
   });
   myPromise.then(onCompletion,
   function(err) {
-    console.log(err.toString());
+    let msg = err.toString();
     if(!_over) {
-      document.getElementById('output').innerHTML += `<div class="error">${err}</div>`;
+      document.getElementById('output').innerHTML += `<div class="error">${msg}</div>`;
     } else {
+      if(msg.startsWith('NameError: name')) {
+        let idx = msg.lastIndexOf('on line');
+        document.getElementById('output').innerHTML += `<div class="error">${msg.substring(0, idx)}</div>`;
+      }
       onCompletion();
     }
   });
