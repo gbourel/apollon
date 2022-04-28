@@ -7,10 +7,8 @@ let _pythonEditor = null; // Codemirror editor
 let _output = [];     // Current script stdout
 let _nsix = false;    // If embedded in a nsix challenge
 
-const NSIX_URL = 'https://app.nsix.fr';
+const NSIX_URL = 'https://api.nsix.fr';
 const LCMS_URL = 'https://webamc.nsix.fr/lcms/python';
-// const NSIX_URL = 'http://localhost:4200';
-// const LCMS_URL = 'http://localhost:9976/lcms/python';
 
 let _exercises = [];   // All exercises
 let _exerciseIdx = 0;  // Current exercise index
