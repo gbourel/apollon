@@ -880,6 +880,12 @@ code {
   font-style: normal;
 }
 
+/* Output */
+
+#output > div {
+  min-height: 1rem;
+}
+
 .error {
   color: #EE4444;
   font-weight: bold;

@@ -3,12 +3,18 @@
 @tailwind components;
 @tailwind utilities;
 
+
 code {
   color: #D4F3D4;
   font-weight: bold;
   font-family: monospace;
   font-size: 1rem;
   font-style: normal;
+}
+
+/* Output */
+#output > div {
+  min-height: 1rem;
 }
 .error {
   color: #EE4444;
