@@ -255,6 +255,8 @@ function init(){
       ],
       throwOnError : false
     });
+
+    document.getElementById('loading').classList.add('hidden');
   });
 }
 
