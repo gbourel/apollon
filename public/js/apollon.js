@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.3.5';
+const VERSION = 'v0.3.6';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor
@@ -16,6 +16,7 @@ let _exercise = null;  // Current exercise
 let _tests = [];       // Tests for current exercise
 let _over = false; // current run programme is terminated
 
+let _user = null;
 
 // Callback on exercise achievement
 function displaySuccess() {
@@ -44,12 +45,17 @@ function displayExercise() {
   _exercise = _exercises[_exerciseIdx];
 
   if (_exercise) {
+    let prog = '';
     loadTestsCSV(_exercise.tests);
     title.innerHTML = _exercise.title || 'Entrainement';
     instruction.innerHTML = marked.parse(_exercise.instruction);
     if(_exercise.proposals && _exercise.proposals.length > 0) {
       _pythonEditor.setValue(_exercise.proposals);
     }
+    if(localStorage.getItem(getProgKey())) {
+      prog = localStorage.getItem(getProgKey());
+    }
+    _pythonEditor.setValue(prog);
   }
 }
 
@@ -147,41 +153,62 @@ function runit() {
   });
 }
 
+function login() {
+  location.href = 'http://ileauxsciences.test:4200/external-login?dest=http://dev.ileauxsciences.test:33481/';
+}
+
 function loadUser(cb) {
+  let token = null;
   if(document.cookie) {
-    const meUrl = NSIX_URL + '/api/users/me';
     const name = 'ember_simple_auth-session='
     let cookies = decodeURIComponent(document.cookie).split(';');
-    cookies.forEach(c => {
+    for (let c of cookies) {
       let idx = c.indexOf(name);
       if(idx === 0) {
         let value = c.substring(name.length);
         let json = JSON.parse(value);
-        let token = json.authenticated.access_token;
-        const req = new Request(meUrl);
-        fetch(req, {
-          'headers': {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        }).then(res => {
-          return res.json();
-        }).then(data => {
-          let user = data.data.attributes;
-          if(user) {
-            user.id = data.data.id;
-          }
-          cb(user);
-        });
+        token = json.authenticated.access_token;
       }
-    })
+    }
   }
+  if(token) {
+    const meUrl = NSIX_URL + '/api/users/me';
+    const req = new Request(meUrl);
+    fetch(req, {
+      'headers': {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    }).then(res => {
+      return res.json();
+    }).then(data => {
+      let user = data.data.attributes;
+      if(user) {
+        user.id = data.data.id;
+      }
+      cb(user);
+    });
+  } else {
+    cb(null);
+  }
+}
+
+function getProgKey(){
+  let key = 'prog'
+  if(_user) {
+    key += '_' + _user.id;
+  }
+  if(_exercise) {
+    key += '_' + _exercise.id;
+  }
+  return key;
 }
 
 function init(){
   const runbtn = document.getElementById('runbtn');
   const nextbtn = document.getElementById('nextbtn');
+  const loginbtn = document.getElementById('login');
   let purl = new URL(window.location.href);
   if(purl && purl.searchParams) {
     let index = purl.searchParams.get("index");
@@ -201,16 +228,14 @@ function init(){
     lineNumbers: true,
     theme: 'monokai'
   });
-  if(sessionStorage.getItem('prog')) {
-    _pythonEditor.setValue(sessionStorage.getItem('prog'));
-  }
 
   runbtn.addEventListener('click', runit);
   nextbtn.addEventListener('click', nextExercise);
+  loginbtn.addEventListener('click', login);
 
   // run script on CTRL + Enter shortcut
   document.addEventListener('keyup', evt => {
-    sessionStorage.setItem('prog', _pythonEditor.getValue());
+    localStorage.setItem(getProgKey(), _pythonEditor.getValue());
     if(evt.target && evt.target.nodeName === 'TEXTAREA'
        && evt.key === 'Enter'
        && evt.ctrlKey && !evt.shiftKey && !evt.altKey) {
@@ -220,41 +245,38 @@ function init(){
 
   loadUser((user) => {
     if(user) {
-      let elt = document.getElementById('username');
-      elt.innerHTML = user["first-name"];
-      elt.classList.remove('hidden');
+      let menu = document.getElementById('profile-menu');
+      let btn = document.getElementById('username');
+      btn.innerHTML = user["first-name"];
+      // menu.classList.remove('hidden');
+      _user = user;
     } else {
-      document.getElementById('login').classList.remove('hidden');
+      // loginbtn.classList.remove('hidden');
+      _user = null;
     }
-  });
 
-  const req = new Request(LCMS_URL);
-  fetch(req).then(res => { return res.json(); })
-  .then(data => {
-    // test data
-    // let data = [
-    //   {
-    //     "id":
-    //     "c9b5438d85e07b8","title":
-    //     "Modifier un programme","instruction":
-    //     "Modifier le programme Python ci-dessous pour afficher le résultat de $a^5 + 79$.\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":
-    //     "a = 7\nprint(a)","solution": "84b1c1cf45ea7a79a126b663df760e034264dae6"
-    //   },
-    //   {"id":"c9b5438d85e07b8","title":"Modifier un programme","instruction":"Modifier le programme Python ci-dessous pour afficher le résultat de $a^5 + 79$.\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":"a = 7\nprint(a)","solution":"84b1c1cf45ea7a79a126b663df760e034264dae6"},{"id":"e5b2f3a850b1e60","title":"Utilisation d'une variable de type dictionnaire","instruction":"La variable `p` est une variable de type dictionnaire : afficher la valeur de la clef \"Metier\".\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":"p = data.personne()","solution":"1f21d635886a46f94cb53e7baeeff638fbca53b8"},{"id":"f41955547593c46","title":"Parcourir un tableau","instruction":"Modifier le programme Python ci-dessous pour afficher la somme des valeurs du tableau `tab`.\n<br><br>_L'affichage doit être fait à l'aide de la fonction `print`._","proposals":"tab = data.tableau()","solution":"0e24cd7267d155500f95a2000cd010da32f7627d"}];
-    _exercises = data;
-    displayExercise();
+    const req = new Request(LCMS_URL);
+    fetch(req).then(res => { return res.json(); })
+    .then(data => {
+      _exercises = data;
+      displayExercise();
 
-    renderMathInElement(document.getElementById('instruction'), {
-      delimiters: [
-          {left: '$$', right: '$$', display: true},
-          {left: '$', right: '$', display: false},
-          {left: '\\(', right: '\\)', display: false},
-          {left: '\\[', right: '\\]', display: true}
-      ],
-      throwOnError : false
+      renderMathInElement(document.getElementById('instruction'), {
+        delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '\\[', right: '\\]', display: true}
+        ],
+        throwOnError : false
+      });
+
+      if(localStorage.getItem(getProgKey())) {
+        _pythonEditor.setValue(localStorage.getItem(getProgKey()));
+      }
+
+      document.getElementById('loading').classList.add('hidden');
     });
-
-    document.getElementById('loading').classList.add('hidden');
   });
 }
 
