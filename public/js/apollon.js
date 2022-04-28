@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.3.2';
+const VERSION = 'v0.3.3';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor
@@ -169,6 +169,10 @@ function init(){
   const nextbtn = document.getElementById('nextbtn');
   let purl = new URL(window.location.href);
   if(purl && purl.searchParams) {
+    let index = purl.searchParams.get("index");
+    if(index) {
+      _exerciseIdx = index;
+    }
     let autostart = purl.searchParams.get("autostart");
     if(autostart !== null) {
       runit();
