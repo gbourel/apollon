@@ -7,14 +7,13 @@ let _pythonEditor = null; // Codemirror editor
 let _output = [];     // Current script stdout
 let _nsix = false;    // If embedded in a nsix challenge
 
-const NSIX_URL = 'https://api.nsix.fr';
-const LCMS_URL = 'https://webamc.nsix.fr/lcms/python';
+const LCMS_URL = 'https://webamc.nsix.fr';
 
 let _exercises = [];   // All exercises
 let _exerciseIdx = 0;  // Current exercise index
 let _exercise = null;  // Current exercise
 let _tests = [];       // Tests for current exercise
-let _over = false; // current run programme is terminated
+let _over = false;     // currently running program is terminated
 
 let _user = null;
 
@@ -38,16 +37,30 @@ function loadTestsCSV(csv) {
   }
 }
 
-function displayExercise() {
-  const title = document.getElementById('title');
+function displayMenu(cb) {
+  const menu = document.getElementById('mainmenu');
+  const main = document.getElementById('main');
   const instruction = document.getElementById('instruction');
+  instruction.innerHTML = '';
+  main.style.display = 'none';
+  menu.style.transform = 'translate(0, 0)';
+  cb && cb();
+}
+
+function displayExercise(level) {
+  // const title = document.getElementById('title');
+  const instruction = document.getElementById('instruction');
+  const main = document.getElementById('main');
+  const menu = document.getElementById('mainmenu');
+  menu.style.transform = 'translate(0, 100vh)';
+  main.style.display = 'block';
 
   _exercise = _exercises[_exerciseIdx];
 
   if (_exercise) {
     let prog = '';
     loadTestsCSV(_exercise.tests);
-    title.innerHTML = _exercise.title || 'Entrainement';
+    // title.innerHTML = _exercise.title || 'Entrainement';
     instruction.innerHTML = marked.parse(_exercise.instruction);
     if(_exercise.proposals && _exercise.proposals.length > 0) {
       _pythonEditor.setValue(_exercise.proposals);
@@ -56,10 +69,11 @@ function displayExercise() {
       prog = localStorage.getItem(getProgKey());
     }
     _pythonEditor.setValue(prog);
+  } else {
+    displayMenu();
   }
 }
 
-// Loads next exercise
 function nextExercise() {
   const successOverlay = document.getElementById('overlay');
   successOverlay.classList.add('hidden');
@@ -68,6 +82,19 @@ function nextExercise() {
   _exerciseIdx++;
   displayExercise();
 }
+
+function loadExercises(evt){
+  // console.info(evt.target);
+  const req = new Request(LCMS_URL + '/lcms/python');
+  fetch(req).then(res => { return res.json(); })
+  .then(data => {
+    console.info(data);
+    _exercises = data;
+    displayExercise();
+  });
+}
+
+// Go to next exercise
 
 function onCompletion(mod) {
   let failed = _tests.length;
@@ -171,6 +198,7 @@ function loadUser(cb) {
       }
     }
   }
+  return cb(null);
   if(token) {
     const meUrl = NSIX_URL + '/api/users/me';
     const req = new Request(meUrl);
@@ -205,10 +233,15 @@ function getProgKey(){
   return key;
 }
 
+function startLoading() {
+  document.getElementById('loading').classList.remove('hidden');
+}
+
+function endLoading() {
+  document.getElementById('loading').classList.add('hidden');
+}
+
 function init(){
-  const runbtn = document.getElementById('runbtn');
-  const nextbtn = document.getElementById('nextbtn');
-  const loginbtn = document.getElementById('login');
   let purl = new URL(window.location.href);
   if(purl && purl.searchParams) {
     let index = purl.searchParams.get("index");
@@ -229,9 +262,13 @@ function init(){
     theme: 'monokai'
   });
 
-  runbtn.addEventListener('click', runit);
-  nextbtn.addEventListener('click', nextExercise);
-  loginbtn.addEventListener('click', login);
+  document.getElementById('runbtn').addEventListener('click', runit);
+  document.getElementById('homebtn').addEventListener('click', displayMenu);
+  document.getElementById('nextbtn').addEventListener('click', nextExercise);
+  document.getElementById('login').addEventListener('click', login);
+  document.getElementById('level-0').addEventListener('click', loadExercises);
+  document.getElementById('level-1').addEventListener('click', loadExercises);
+  document.getElementById('level-2').addEventListener('click', loadExercises);
 
   // run script on CTRL + Enter shortcut
   document.addEventListener('keyup', evt => {
@@ -243,7 +280,7 @@ function init(){
     }
   });
 
-  loadUser((user) => {
+  loadUser((user, profile) => {
     if(user) {
       let menu = document.getElementById('profile-menu');
       let btn = document.getElementById('username');
@@ -255,27 +292,20 @@ function init(){
       _user = null;
     }
 
-    const req = new Request(LCMS_URL);
-    fetch(req).then(res => { return res.json(); })
-    .then(data => {
-      _exercises = data;
-      displayExercise();
 
-      renderMathInElement(document.getElementById('instruction'), {
-        delimiters: [
-            {left: '$$', right: '$$', display: true},
-            {left: '$', right: '$', display: false},
-            {left: '\\(', right: '\\)', display: false},
-            {left: '\\[', right: '\\]', display: true}
-        ],
-        throwOnError : false
-      });
+    renderMathInElement(document.getElementById('instruction'), {
+      delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+      ],
+      throwOnError : false
+    });
 
-      if(localStorage.getItem(getProgKey())) {
-        _pythonEditor.setValue(localStorage.getItem(getProgKey()));
-      }
-
-      document.getElementById('loading').classList.add('hidden');
+    // loadExercises(null);
+    displayMenu(() => {
+      endLoading();
     });
   });
 }

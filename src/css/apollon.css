@@ -12,7 +12,32 @@ code {
   font-style: normal;
 }
 
-/* Output */
+#title {
+  font-variant: small-caps;
+  color: #fece3e;
+}
+
+/* Menu */
+#mainmenu {
+  transition: transform .3s ease-in-out;
+}
+.c-card {
+  cursor: pointer;
+  background-color: #ffeebc;
+  transition: transform .1s ease-in-out;
+}
+.c-card:hover {
+  transform: scale(1.05);
+}
+.c-card > div {
+  border-color: #3772a5;
+}
+
+/* Src / Output */
+main {
+  display: none;
+}
+
 #output > div {
   min-height: 1rem;
 }
@@ -32,10 +57,9 @@ code {
   position: fixed;
   width: 100%;
   height: 100%;
-  z-index: 10;
   top: 0;
   left: 0;
-  background-color: #333;
+  background-color: #333333DD;
 }
 
 #loading > img {
