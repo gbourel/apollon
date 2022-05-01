@@ -37,14 +37,13 @@ function loadTestsCSV(csv) {
   }
 }
 
-function displayMenu(cb) {
+function displayMenu() {
   const menu = document.getElementById('mainmenu');
   const main = document.getElementById('main');
   const instruction = document.getElementById('instruction');
   instruction.innerHTML = '';
   main.classList.add('hidden');
   menu.style.transform = 'translate(0, 0)';
-  cb && cb();
 }
 
 function displayExercise(level) {
@@ -75,6 +74,13 @@ function displayExercise(level) {
     }
     if(localStorage.getItem(getProgKey())) {
       prog = localStorage.getItem(getProgKey());
+    } else {
+      if(_user && _user.results) {
+        let found = _user.results.find(r => r.exerciseId === _exercise.id);
+        if (found) {
+          prog = found.content;
+        }
+      }
     }
     _pythonEditor.setValue(prog);
   } else {
@@ -93,15 +99,45 @@ function nextExercise() {
 }
 
 // Load exercises from remote LCMS
-function loadExercises(evt){
-  // console.info(evt.target);
+function loadExercises(level){
+  if(!level) { return console.warn('Missing level'); }
   const req = new Request(LCMS_URL + '/lcms/python');
   fetch(req).then(res => { return res.json(); })
   .then(data => {
-    console.info(data);
     _exercises = data;
+    if(_user) {
+      let list = _exercises.filter(e => {
+        let found = _user.results.find(r => r.exerciseId === e.id && r.done === true)
+        return !found;
+      })
+      _exercises = list;
+    }
     displayExercise();
   });
+}
+
+// Send succes to lcms api
+function registerSuccess(exerciseId, answer){
+  const token = getAuthToken();
+  if(token) {
+    const body = {
+      'exerciseId': exerciseId,
+      'answer': answer,
+      'content': _pythonEditor.getValue()
+    };
+    const req = new Request(LCMS_URL + '/lcms/success',  {
+      'method': 'POST',
+      'headers': {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      'body': JSON.stringify(body)
+    });
+    fetch(req).then(res => { return res.json(); })
+    .then(data => {
+      console.info('Ahoy', JSON.stringify(data));
+    });
+  }
 }
 
 // On program completion
@@ -117,13 +153,14 @@ function onCompletion(mod) {
     }
     if (failed === 0) {
       displaySuccess();
+      const answer = sha256(_output);
       if(parent) {
-        const answer = sha256(_output);
         parent.window.postMessage({
           'answer': answer,
           'from': 'pix'
         }, '*');
       }
+      registerSuccess(_exercise.id, answer);
     }
   }
   if(failed > 0) {
@@ -191,10 +228,10 @@ function runit() {
 }
 
 function login() {
-  location.href = 'http://ileauxsciences.test:4200/external-login?dest=http://dev.ileauxsciences.test:33481/';
+  // location.href = 'http://ileauxsciences.test:4200/external-login?dest=http://dev.ileauxsciences.test:36505/';
 }
 
-function loadUser(cb) {
+function getAuthToken(){
   let token = null;
   if(document.cookie) {
     const name = 'ember_simple_auth-session='
@@ -208,9 +245,13 @@ function loadUser(cb) {
       }
     }
   }
-  return cb(null);
+  return token;
+}
+
+function loadUser(cb) {
+  let token = getAuthToken();
   if(token) {
-    const meUrl = NSIX_URL + '/api/users/me';
+    const meUrl = LCMS_URL + '/lcms/students/profile';
     const req = new Request(meUrl);
     fetch(req, {
       'headers': {
@@ -219,15 +260,17 @@ function loadUser(cb) {
         'Accept': 'application/json'
       }
     }).then(res => {
-      return res.json();
-    }).then(data => {
-      let user = data.data.attributes;
-      if(user) {
-        user.id = data.data.id;
+      let json = null;
+      if(res.status === 200) {
+        json = res.json();
       }
-      cb(user);
+      return json;
+    }).then(data => {
+      // console.info(JSON.stringify(data, '', ' '));
+      cb(data.student);
     });
   } else {
+    login();
     cb(null);
   }
 }
@@ -235,7 +278,7 @@ function loadUser(cb) {
 function getProgKey(){
   let key = 'prog'
   if(_user) {
-    key += '_' + _user.id;
+    key += '_' + _user.studentId;
   }
   if(_exercise) {
     key += '_' + _exercise.id;
@@ -268,9 +311,9 @@ function init(){
   document.getElementById('homebtn').addEventListener('click', displayMenu);
   document.getElementById('nextbtn').addEventListener('click', nextExercise);
   document.getElementById('login').addEventListener('click', login);
-  document.getElementById('level-0').addEventListener('click', loadExercises);
-  document.getElementById('level-1').addEventListener('click', loadExercises);
-  document.getElementById('level-2').addEventListener('click', loadExercises);
+  document.getElementById('level-0').addEventListener('click', () => loadExercises(1));
+  document.getElementById('level-1').addEventListener('click', () => loadExercises(2));
+  document.getElementById('level-2').addEventListener('click', () => loadExercises(3));
 
   // run script on CTRL + Enter shortcut
   document.addEventListener('keyup', evt => {
@@ -282,18 +325,18 @@ function init(){
     }
   });
 
-  loadUser((user, profile) => {
+  loadUser((user) => {
     if(user) {
-      let menu = document.getElementById('profile-menu');
-      let btn = document.getElementById('username');
-      btn.innerHTML = user["first-name"];
+      // TODO cache user
+      // let menu = document.getElementById('profile-menu');
+      // let btn = document.getElementById('username');
+      // btn.innerHTML = user["first-name"];
       // menu.classList.remove('hidden');
       _user = user;
     } else {
       // loginbtn.classList.remove('hidden');
       _user = null;
     }
-
 
     renderMathInElement(document.getElementById('instruction'), {
       delimiters: [
@@ -305,10 +348,8 @@ function init(){
       throwOnError : false
     });
 
-    // loadExercises(null);
-    displayMenu(() => {
-      endLoading();
-    });
+    displayMenu();
+    endLoading();
   });
 }
 
