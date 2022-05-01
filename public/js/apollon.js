@@ -42,7 +42,7 @@ function displayMenu(cb) {
   const main = document.getElementById('main');
   const instruction = document.getElementById('instruction');
   instruction.innerHTML = '';
-  main.style.display = 'none';
+  main.classList.add('hidden');
   menu.style.transform = 'translate(0, 0)';
   cb && cb();
 }
@@ -53,12 +53,20 @@ function displayExercise(level) {
   const main = document.getElementById('main');
   const menu = document.getElementById('mainmenu');
   menu.style.transform = 'translate(0, 100vh)';
-  main.style.display = 'block';
+  main.classList.remove('hidden');
 
   _exercise = _exercises[_exerciseIdx];
 
   if (_exercise) {
     let prog = '';
+    if(!_pythonEditor) {
+      _pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
+        value: "print('Hello world')",
+        mode:  "python",
+        lineNumbers: true,
+        theme: 'monokai'
+      });
+    }
     loadTestsCSV(_exercise.tests);
     // title.innerHTML = _exercise.title || 'Entrainement';
     instruction.innerHTML = marked.parse(_exercise.instruction);
@@ -74,6 +82,7 @@ function displayExercise(level) {
   }
 }
 
+// Go to next exercise
 function nextExercise() {
   const successOverlay = document.getElementById('overlay');
   successOverlay.classList.add('hidden');
@@ -83,6 +92,7 @@ function nextExercise() {
   displayExercise();
 }
 
+// Load exercises from remote LCMS
 function loadExercises(evt){
   // console.info(evt.target);
   const req = new Request(LCMS_URL + '/lcms/python');
@@ -94,8 +104,7 @@ function loadExercises(evt){
   });
 }
 
-// Go to next exercise
-
+// On program completion
 function onCompletion(mod) {
   let failed = _tests.length;
   if(_tests.length > 0 && _tests.length === _output.length) {
@@ -146,6 +155,7 @@ function builtinRead(x) {
 
 // Run python script
 function runit() {
+  if(_pythonEditor === null) { return; }
   var prog = _pythonEditor.getValue();
   var mypre = document.getElementById('output');
   mypre.innerHTML = '';
@@ -253,14 +263,6 @@ function init(){
       runit();
     }
   }
-
-  // Create codemirror editor
-  _pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
-    value: "print('Hello world')",
-    mode:  "python",
-    lineNumbers: true,
-    theme: 'monokai'
-  });
 
   document.getElementById('runbtn').addEventListener('click', runit);
   document.getElementById('homebtn').addEventListener('click', displayMenu);

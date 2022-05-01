@@ -1,5 +1,5 @@
 /*
-! tailwindcss v3.0.24 | MIT License | https://tailwindcss.com
+! tailwindcss v3.0.23 | MIT License | https://tailwindcss.com
 */
 
 /*
@@ -1054,10 +1054,6 @@ code {
 
 /* Src / Output */
 
-main {
-  display: none;
-}
-
 #output > div {
   min-height: 1rem;
 }
@@ -1267,10 +1263,6 @@ span.katex {
 }
 
 @media (min-width: 768px) {
-  .md\:flex {
-    display: flex;
-  }
-
   .md\:w-1\/3 {
     width: 33.333333%;
   }
