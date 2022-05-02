@@ -12,12 +12,15 @@
   <div id="loading" class="z-20">
     <img src="img/python.png" alt="Logo Python">
   </div>
-  <div id="profile" class="float-right">
-    <button id="login" class="hidden m-2 p-1 shadow-lg bg-blue-500 rounded px-2 text-slate-100" type="button">Login</button>
-    <div id="profile-menu" class="hidden">
-      <button type="button" class="m-1 p-2 bg-gray-800 flex text-xs rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-        <span id="username">Me</span>
+  <div id="profile" class="float-right relative">
+    <button id="login" class="hidden m-5 p-1 shadow-lg bg-yellow-600 rounded px-2 text-slate-00" type="button">Connexion</button>
+    <div id="profile-menu" class="hidden mt-5 mr-2">
+      <button id="profileMenuBtn" type="button" class="m-1 p-2 bg-slate-900 flex text-xs rounded">
+        <span id="username">Moi</span>
       </button>
+      <div id="profileMenu" class="hidden absolute top-14 right-3 shadow-md rounded bg-slate-900 text-gray-300 ring-1 ring-gray-300" >
+        <div id="logoutBtn" class="p-3 cursor-pointer">Déconnexion</div>
+      </div>
     </div>
     <div class="hidden origin-top-right absolute top-12 right-5 mt-2 w-36 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
       <!-- Active: "bg-gray-100", Not Active: "" -->
@@ -126,8 +129,8 @@
       <div class="w-full md:w-1/2 font-mono text-sm border-2 bg-stone-100 text-green-900 border-zinc-500 p-2" id="output"></div>
       <div id="mycanvas"></div>
     </div>
-    <button id="runbtn" class="bg-blue-500 rounded my-2 p-2" type="button">Run</button>
-    <button id="homebtn" class="bg-slate-500 float-right rounded my-2 p-2" type="button">Home</button>
+    <button id="runbtn" class="bg-blue-500 rounded my-2 p-2 shadow-md" type="button">Run</button>
+    <button id="homebtn" class="bg-slate-500 float-right rounded my-2 p-2 shadow-md" type="button">Home</button>
   </main>
   <!-- If you want turtle graphics include a canvas -->
 

@@ -115,6 +115,7 @@ body {
   font-size: small;
   font-style: italic;
   color: #AAA;
+  z-index: -1;
 }
 
 /* Katex */

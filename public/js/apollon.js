@@ -7,7 +7,9 @@ let _pythonEditor = null; // Codemirror editor
 let _output = [];     // Current script stdout
 let _nsix = false;    // If embedded in a nsix challenge
 
+const NSIX_LOGIN_URL = 'http://app.nsix.fr/connexion'
 const LCMS_URL = 'https://webamc.nsix.fr';
+const COOKIE_DOMAIN = '.ileauxsciences.test';
 
 let _exercises = [];   // All exercises
 let _exerciseIdx = 0;  // Current exercise index
@@ -135,7 +137,7 @@ function registerSuccess(exerciseId, answer){
     });
     fetch(req).then(res => { return res.json(); })
     .then(data => {
-      console.info('Ahoy', JSON.stringify(data));
+      console.info(JSON.stringify(data));
     });
   }
 }
@@ -228,7 +230,8 @@ function runit() {
 }
 
 function login() {
-  // location.href = 'http://ileauxsciences.test:4200/external-login?dest=http://dev.ileauxsciences.test:36505/';
+  const current = location.href;
+  location.href = `${NSIX_LOGIN_URL}?dest=${current}`;
 }
 
 function getAuthToken(){
@@ -238,8 +241,8 @@ function getAuthToken(){
     let cookies = decodeURIComponent(document.cookie).split(';');
     for (let c of cookies) {
       let idx = c.indexOf(name);
-      if(idx === 0) {
-        let value = c.substring(name.length);
+      if(idx > -1) {
+        let value = c.substring(name.length + idx);
         let json = JSON.parse(value);
         token = json.authenticated.access_token;
       }
@@ -270,7 +273,6 @@ function loadUser(cb) {
       cb(data.student);
     });
   } else {
-    login();
     cb(null);
   }
 }
@@ -294,6 +296,26 @@ function endLoading() {
   document.getElementById('loading').classList.add('hidden');
 }
 
+function toggleMenu(evt){
+  let eltMenu = document.getElementById('profileMenu');
+  if(eltMenu.classList.contains('hidden')){
+    eltMenu.classList.remove('hidden');
+    document.addEventListener('click', toggleMenu);
+  } else {
+    eltMenu.classList.add('hidden');
+    document.removeEventListener('click', toggleMenu);
+  }
+  evt.stopPropagation();
+}
+
+function logout() {
+  const cookies = ['ember_simple_auth-session', 'ember_simple_auth-session-expiration_time'];
+  for (let cookie of cookies) {
+    document.cookie=`${cookie}=; domain=${COOKIE_DOMAIN}; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+  }
+  location.reload();
+}
+
 function init(){
   let purl = new URL(window.location.href);
   if(purl && purl.searchParams) {
@@ -307,6 +329,7 @@ function init(){
     }
   }
 
+  document.getElementById('logoutBtn').addEventListener('click', logout);
   document.getElementById('runbtn').addEventListener('click', runit);
   document.getElementById('homebtn').addEventListener('click', displayMenu);
   document.getElementById('nextbtn').addEventListener('click', nextExercise);
@@ -314,10 +337,13 @@ function init(){
   document.getElementById('level-0').addEventListener('click', () => loadExercises(1));
   document.getElementById('level-1').addEventListener('click', () => loadExercises(2));
   document.getElementById('level-2').addEventListener('click', () => loadExercises(3));
+  document.getElementById('profileMenuBtn').addEventListener('click', toggleMenu);
 
   // run script on CTRL + Enter shortcut
   document.addEventListener('keyup', evt => {
-    localStorage.setItem(getProgKey(), _pythonEditor.getValue());
+    if(_pythonEditor){
+      localStorage.setItem(getProgKey(), _pythonEditor.getValue());
+    }
     if(evt.target && evt.target.nodeName === 'TEXTAREA'
        && evt.key === 'Enter'
        && evt.ctrlKey && !evt.shiftKey && !evt.altKey) {
@@ -326,15 +352,13 @@ function init(){
   });
 
   loadUser((user) => {
+    // TODO session cache
     if(user) {
-      // TODO cache user
-      // let menu = document.getElementById('profile-menu');
-      // let btn = document.getElementById('username');
-      // btn.innerHTML = user["first-name"];
-      // menu.classList.remove('hidden');
+      document.getElementById('username').innerHTML = user.firstName || 'Moi';
+      document.getElementById('profile-menu').classList.remove('hidden');
       _user = user;
     } else {
-      // loginbtn.classList.remove('hidden');
+      document.getElementById('login').classList.remove('hidden');
       _user = null;
     }
 
