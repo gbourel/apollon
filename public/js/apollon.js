@@ -60,6 +60,7 @@ function displayExercise(level) {
 
   if (_exercise) {
     let prog = '';
+    let lastprog = localStorage.getItem(getProgKey());
     if(!_pythonEditor) {
       _pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
         value: "print('Hello world')",
@@ -71,11 +72,20 @@ function displayExercise(level) {
     loadTestsCSV(_exercise.tests);
     // title.innerHTML = _exercise.title || 'Entrainement';
     instruction.innerHTML = marked.parse(_exercise.instruction);
+    renderMathInElement(instruction, {
+      delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+      ],
+      throwOnError : false
+    });
     if(_exercise.proposals && _exercise.proposals.length > 0) {
-      _pythonEditor.setValue(_exercise.proposals);
+      prog = _exercise.proposals;
     }
-    if(localStorage.getItem(getProgKey())) {
-      prog = localStorage.getItem(getProgKey());
+    if(lastprog && lastprog.length) {
+      prog = lastprog;
     } else {
       if(_user && _user.results) {
         let found = _user.results.find(r => r.exerciseId === _exercise.id);
@@ -104,7 +114,7 @@ function nextExercise() {
 function loadExercises(level){
   if(!level) { return console.warn('Missing level'); }
   startLoading();
-  const req = new Request(LCMS_URL + '/lcms/python');
+  const req = new Request(`${LCMS_URL}/lcms/python/${level}`);
   fetch(req).then(res => { return res.json(); })
   .then(data => {
     _exercises = data;
@@ -363,16 +373,6 @@ function init(){
       document.getElementById('login').classList.remove('hidden');
       _user = null;
     }
-
-    renderMathInElement(document.getElementById('instruction'), {
-      delimiters: [
-          {left: '$$', right: '$$', display: true},
-          {left: '$', right: '$', display: false},
-          {left: '\\(', right: '\\)', display: false},
-          {left: '\\[', right: '\\]', display: true}
-      ],
-      throwOnError : false
-    });
 
     displayMenu();
     endLoading();
