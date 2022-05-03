@@ -103,6 +103,7 @@ function nextExercise() {
 // Load exercises from remote LCMS
 function loadExercises(level){
   if(!level) { return console.warn('Missing level'); }
+  startLoading();
   const req = new Request(LCMS_URL + '/lcms/python');
   fetch(req).then(res => { return res.json(); })
   .then(data => {
@@ -114,6 +115,7 @@ function loadExercises(level){
       })
       _exercises = list;
     }
+    endLoading();
     displayExercise();
   });
 }
