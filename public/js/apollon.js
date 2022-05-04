@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.3.6';
+const VERSION = 'v0.3.8';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor
@@ -111,9 +111,9 @@ function nextExercise() {
 }
 
 // Load exercises from remote LCMS
-function loadExercises(level){
+function loadExercises(level, pushHistory){
   if(!level) { return console.warn('Missing level'); }
-  startLoading();
+  showLoading();
   const req = new Request(`${LCMS_URL}/lcms/python/${level}`);
   fetch(req).then(res => { return res.json(); })
   .then(data => {
@@ -125,8 +125,13 @@ function loadExercises(level){
       })
       _exercises = list;
     }
-    endLoading();
-    displayExercise();
+    hideLoading();
+    if(_exercises.length) {
+      if(pushHistory) {
+        history.pushState({'level': level}, '', `/#niveau${level}`);
+      }
+      displayExercise();
+    }
   });
 }
 
@@ -300,11 +305,11 @@ function getProgKey(){
   return key;
 }
 
-function startLoading() {
+function showLoading() {
   document.getElementById('loading').classList.remove('hidden');
 }
 
-function endLoading() {
+function hideLoading() {
   document.getElementById('loading').classList.add('hidden');
 }
 
@@ -346,9 +351,9 @@ function init(){
   document.getElementById('homebtn').addEventListener('click', displayMenu);
   document.getElementById('nextbtn').addEventListener('click', nextExercise);
   document.getElementById('login').addEventListener('click', login);
-  document.getElementById('level-0').addEventListener('click', () => loadExercises(1));
-  document.getElementById('level-1').addEventListener('click', () => loadExercises(2));
-  document.getElementById('level-2').addEventListener('click', () => loadExercises(3));
+  document.getElementById('level-1').addEventListener('click', () => loadExercises(1, true));
+  document.getElementById('level-2').addEventListener('click', () => loadExercises(2, true));
+  document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));
   document.getElementById('profileMenuBtn').addEventListener('click', toggleMenu);
 
   // run script on CTRL + Enter shortcut
@@ -362,10 +367,19 @@ function init(){
       runit();
     }
   });
+  addEventListener('popstate', evt => {
+    console.info(evt.state);
+    if(evt.state && evt.state.level) {
+      loadExercises(evt.state.level);
+    } else {
+      displayMenu();
+    }
+  });
 
   loadUser((user) => {
     // TODO session cache
     if(user) {
+      _user = user;
       document.getElementById('username').innerHTML = user.firstName || 'Moi';
       document.getElementById('profile-menu').classList.remove('hidden');
       _user = user;
@@ -374,8 +388,19 @@ function init(){
       _user = null;
     }
 
-    displayMenu();
-    endLoading();
+    let loaded = false;
+    if(location.hash) {
+      let levelpath = location.hash.match('#niveau(\\d)');
+      if(levelpath) {
+        let lvl = parseInt(levelpath[1]);
+        if(lvl !== NaN) {
+          loadExercises(lvl);
+          loaded = true;
+        }
+      }
+    }
+    if(!loaded) { displayMenu(); }
+    hideLoading();
   });
 }
 
