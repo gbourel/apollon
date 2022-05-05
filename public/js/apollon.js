@@ -110,9 +110,23 @@ function nextExercise() {
   displayExercise();
 }
 
+// Display login required popup
+function loginRequired() {
+  let lr = document.getElementById('login-required');
+  lr.style.width = '100%';
+  lr.onclick = hideLoginPopup;
+  document.getElementById('login-popup').style.transform = 'translate(0,0)';
+}
+
+function hideLoginPopup() {
+  document.getElementById('login-popup').style.transform = 'translate(0,-70vh)';
+  document.getElementById('login-required').style.width = '0%';
+}
+
 // Load exercises from remote LCMS
 function loadExercises(level, pushHistory){
   if(!level) { return console.warn('Missing level'); }
+  if(!_user) { return loginRequired(); }
   showLoading();
   const req = new Request(`${LCMS_URL}/lcms/python/${level}`);
   fetch(req).then(res => { return res.json(); })
@@ -334,7 +348,6 @@ function logout() {
 }
 
 function updateAchievments() {
-  console.info(_user);
   if(!_user || !_user.exercises) { return; }
   for (let i=1; i<4 ; i++){
     let elt = document.querySelector(`#level-${i} .percent`);
@@ -376,6 +389,7 @@ function init(){
   document.getElementById('homebtn').addEventListener('click', displayMenu);
   document.getElementById('nextbtn').addEventListener('click', nextExercise);
   document.getElementById('login').addEventListener('click', login);
+  document.getElementById('login2').addEventListener('click', login);
   document.getElementById('level-1').addEventListener('click', () => loadExercises(1, true));
   document.getElementById('level-2').addEventListener('click', () => loadExercises(2, true));
   document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));

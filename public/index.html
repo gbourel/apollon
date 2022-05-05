@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
   <title>Apollon</title>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex">
   <link rel="stylesheet" href="lib/katex/katex.min.css">
   <link rel="stylesheet" href="lib/codemirror/codemirror.css">
   <link rel="stylesheet" href="lib/codemirror/monokai.css">
@@ -143,6 +144,12 @@
         <span class="nsix hidden">Appuyer sur valider pour continuer.</span>
         <button id="nextbtn" class="standalone hidden bg-blue-500 rounded px-2 text-slate-100 shadow-lg" type="button">Au suivant</button>
       </div>
+    </div>
+  </div>
+  <div id="login-required">
+    <div id="login-popup">
+      <span>Connexion nécessaire pour ces exercices.</span>
+      <button id="login2" class="m-5 p-1 shadow-lg bg-yellow-600 rounded px-2 text-slate-00" type="button">Connexion</button>
     </div>
   </div>
   <span id="version"></span>

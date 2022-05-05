@@ -127,12 +127,13 @@ span.katex {
 /* Success overlay  */
 
 #overlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
   background: #40404090;
+  z-index: 20;
 }
 #overlay img {
   position: fixed;
@@ -149,8 +150,8 @@ span.katex {
   height: 128px;
   margin-left: -150px;
   margin-top: -50px;
-  top: 50vh;
-  left: 50vw;
+  top: 50%;
+  left: 50%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -167,4 +168,41 @@ span.katex {
   color: #555;
   font-size: small;
   font-style: italic;
+}
+
+#login-required {
+  position: fixed;
+  display: block;
+  background: #40404090;
+  width: 0;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 20;
+}
+
+#login-popup {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  top: 50%;
+  left: 50%;
+  width: 320px;
+  height: 260px;
+  margin-left: -160px;
+  margin-top: -140px;
+  padding: 8rem 2rem 0rem 2rem;
+  text-align: center;
+  border-radius: 1rem;
+  background: 50% 10% / 20% no-repeat url("./img/connexion.png"),
+              linear-gradient(-45deg, #475569, #343E4C, #476669, #3a380f);
+  box-shadow: 0 4px 6px -1px #00000055, 0 2px 4px -2px #00000055;
+  border: 2px solid #35404e;
+  transform: translate(0, -70vh);
+  transition: transform .3s ease-in-out;
+  z-index: 20;
+}
+#login-popup span {
+  color: #ffeebc;
 }
