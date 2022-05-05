@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.4.1';
+const VERSION = 'v0.4.2';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor
@@ -83,6 +83,9 @@ function displayExercise(level) {
     });
     if(_exercise.proposals && _exercise.proposals.length > 0) {
       prog = _exercise.proposals;
+      document.getElementById('resetbtn').classList.remove('hidden');
+    } else {
+      document.getElementById('resetbtn').classList.add('hidden');
     }
     if(lastprog && lastprog.length) {
       prog = lastprog;
@@ -149,6 +152,15 @@ function loadExercises(level, pushHistory){
       displayExercise();
     }
   });
+}
+
+// Reload initial prog
+function resetProg(){
+  if(_exercise && _exercise.proposals && _exercise.proposals.length > 0) {
+    if(_pythonEditor) {
+      _pythonEditor.setValue(_exercise.proposals);
+    }
+  }
 }
 
 // Send succes to lcms api
@@ -392,6 +404,7 @@ function init(){
   document.getElementById('runbtn').addEventListener('click', runit);
   document.getElementById('homebtn').addEventListener('click', () => { displayMenu(); history.pushState(null, '', '/'); });
   document.getElementById('nextbtn').addEventListener('click', nextExercise);
+  document.getElementById('resetbtn').addEventListener('click', resetProg);
   document.getElementById('login').addEventListener('click', login);
   document.getElementById('login2').addEventListener('click', login);
   document.getElementById('level-1').addEventListener('click', () => loadExercises(1, true));
