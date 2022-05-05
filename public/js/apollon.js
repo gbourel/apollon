@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.3.10';
+const VERSION = 'v0.4.1';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor
@@ -97,6 +97,7 @@ function displayExercise(level) {
     _pythonEditor.setValue(prog);
   } else {
     displayMenu();
+    history.pushState(null, '', '/');
   }
 }
 
@@ -132,6 +133,7 @@ function loadExercises(level, pushHistory){
   fetch(req).then(res => { return res.json(); })
   .then(data => {
     _exercises = data;
+    _exerciseIdx = 0;
     if(_user) {
       let list = _exercises.filter(e => {
         let found = _user.results.find(r => r.exerciseId === e.id && r.done === true)
@@ -158,7 +160,7 @@ function registerSuccess(exerciseId, answer){
       'answer': answer,
       'content': _pythonEditor.getValue()
     };
-    const req = new Request(LCMS_URL + '/lcms/success',  {
+    const req = new Request(LCMS_URL + '/students/success',  {
       'method': 'POST',
       'headers': {
         'Authorization': 'Bearer ' + token,
@@ -169,6 +171,8 @@ function registerSuccess(exerciseId, answer){
     fetch(req).then(res => { return res.json(); })
     .then(data => {
       console.info(JSON.stringify(data));
+      _user.results.push(data);
+      updateAchievments();
     });
   }
 }
@@ -185,7 +189,6 @@ function onCompletion(mod) {
       }
     }
     if (failed === 0) {
-      displaySuccess();
       const answer = sha256(_output);
       if(parent) {
         parent.window.postMessage({
@@ -194,6 +197,7 @@ function onCompletion(mod) {
         }, '*');
       }
       registerSuccess(_exercise.id, answer);
+      displaySuccess();
     }
   }
   if(failed > 0) {
@@ -285,7 +289,7 @@ function getAuthToken(){
 function loadUser(cb) {
   let token = getAuthToken();
   if(token) {
-    const meUrl = LCMS_URL + '/lcms/students/profile';
+    const meUrl = LCMS_URL + '/students/profile';
     const req = new Request(meUrl);
     fetch(req, {
       'headers': {
@@ -386,7 +390,7 @@ function init(){
 
   document.getElementById('logoutBtn').addEventListener('click', logout);
   document.getElementById('runbtn').addEventListener('click', runit);
-  document.getElementById('homebtn').addEventListener('click', displayMenu);
+  document.getElementById('homebtn').addEventListener('click', () => { displayMenu(); history.pushState(null, '', '/'); });
   document.getElementById('nextbtn').addEventListener('click', nextExercise);
   document.getElementById('login').addEventListener('click', login);
   document.getElementById('login2').addEventListener('click', login);
@@ -397,13 +401,13 @@ function init(){
 
   // run script on CTRL + Enter shortcut
   document.addEventListener('keyup', evt => {
-    if(_pythonEditor){
-      localStorage.setItem(getProgKey(), _pythonEditor.getValue());
-    }
-    if(evt.target && evt.target.nodeName === 'TEXTAREA'
-       && evt.key === 'Enter'
-       && evt.ctrlKey && !evt.shiftKey && !evt.altKey) {
-      runit();
+    if(evt.target && evt.target.nodeName === 'TEXTAREA') {
+      if(_pythonEditor){
+        localStorage.setItem(getProgKey(), _pythonEditor.getValue());
+      }
+      if(evt.key === 'Enter' && evt.ctrlKey && !evt.shiftKey && !evt.altKey) {
+        runit();
+      }
     }
   });
   addEventListener('popstate', evt => {
