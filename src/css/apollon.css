@@ -91,6 +91,9 @@ ul {
   padding: 0.8rem 0.8rem;
   border: 1px solid #777;
 }
+#instruction p {
+  margin-top: 0.8rem;
+}
 
 /* Background */
 
