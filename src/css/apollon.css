@@ -94,6 +94,9 @@ ul {
 #instruction p {
   margin-top: 0.8rem;
 }
+#instruction img.center {
+  margin: auto;
+}
 
 /* Background */
 
