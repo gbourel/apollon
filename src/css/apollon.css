@@ -34,8 +34,8 @@ code {
 }
 
 /* Src / Output */
-#output > div {
-  min-height: 1rem;
+#output {
+  min-height: 6rem;
 }
 .error {
   color: #EE4444;
@@ -83,6 +83,13 @@ code {
 ul {
   margin-left: 1.5rem;
   list-style-type: circle;
+}
+#instruction table {
+  margin: 0.5rem 0rem;
+}
+#instruction table th {
+  padding: 0.8rem 0.8rem;
+  border: 1px solid #777;
 }
 
 /* Background */
