@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.4.2';
+const VERSION = 'v0.4.3';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor
@@ -184,7 +184,7 @@ function registerSuccess(exerciseId, answer){
     .then(data => {
       console.info(JSON.stringify(data));
       _user.results.push(data);
-      updateAchievments();
+      updateAchievements();
     });
   }
 }
@@ -363,7 +363,7 @@ function logout() {
   location.reload();
 }
 
-function updateAchievments() {
+function updateAchievements() {
   if(!_user || !_user.exercises) { return; }
   for (let i=1; i<4 ; i++){
     let elt = document.querySelector(`#level-${i} .percent`);
@@ -384,6 +384,7 @@ function updateAchievments() {
     }
     elt.innerHTML = `&nbsp; ${Math.round(percent)} % terminé`;
     document.querySelector(`#level-${i} .stars`).innerHTML = starsContent;
+    document.querySelector(`#level-${i} .achievement`).title = `${done} / ${total} réussi${(done > 0) ? 's' : ''}`;
   }
 }
 
@@ -438,7 +439,7 @@ function init(){
       _user = user;
       document.getElementById('username').innerHTML = user.firstName || 'Moi';
       document.getElementById('profile-menu').classList.remove('hidden');
-      updateAchievments();
+      updateAchievements();
     } else {
       document.getElementById('login').classList.remove('hidden');
       _user = null;
@@ -453,6 +454,24 @@ function init(){
           loadExercises(lvl);
           loaded = true;
         }
+      }
+      if(location.hash === '#sandbox') {
+        const main = document.getElementById('main');
+        const menu = document.getElementById('mainmenu');
+        menu.style.transform = 'translate(0, 100vh)';
+        main.classList.remove('hidden');
+        if(!_pythonEditor) {
+          _pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
+            value: "print('Hello world')",
+            mode:  "python",
+            lineNumbers: true,
+            theme: 'monokai'
+          });
+        }
+        if(localStorage.getItem(getProgKey())) {
+          _pythonEditor.setValue(localStorage.getItem(getProgKey()));
+        }
+        loaded = true;
       }
     }
     if(!loaded) { displayMenu(); }
