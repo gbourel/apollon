@@ -578,10 +578,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin: 0.25rem;
 }
 
-.m-48 {
-  margin: 12rem;
-}
-
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
@@ -688,10 +684,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .w-4 {
   width: 1rem;
-}
-
-.grow {
-  flex-grow: 1;
 }
 
 .origin-top-right {
@@ -863,10 +855,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .p-3 {
   padding: 0.75rem;
-}
-
-.p-0 {
-  padding: 0px;
 }
 
 .px-2 {
@@ -1081,6 +1069,12 @@ code {
   color: #fece3e;
 }
 
+#progress {
+  height: 48px;
+  width: 100%;
+  color: #234968;
+}
+
 /* Menu */
 
 #mainmenu {
@@ -1099,6 +1093,18 @@ code {
 
 .c-card > div {
   border-color: #3772a5;
+}
+
+#title {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+@media (max-width: 850px) {
+  #title {
+    font-size: 1.3rem;
+    line-height: 1.8rem;
+  }
 }
 
 /* Src / Output */

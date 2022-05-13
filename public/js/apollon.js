@@ -242,9 +242,9 @@ function builtinRead(x) {
 // Run python script
 function runit() {
   if(_pythonEditor === null) { return; }
-  var prog = _pythonEditor.getValue();
-  var mypre = document.getElementById('output');
-  mypre.innerHTML = '';
+  let prog = _pythonEditor.getValue();
+  let outputElt = document.getElementById('output');
+  outputElt.innerHTML = '';
   Sk.pre = 'output';
   Sk.configure({
     output: outf,
@@ -255,14 +255,30 @@ function runit() {
   for (let t of _tests) {
     prog += "\n" + t.python;
   }
-  // (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
   _output = [];
   _over = false;
-  var myPromise = Sk.misceval.asyncToPromise(function() {
-      return Sk.importMainWithBody("<stdin>", false, prog, true);
-  });
-  myPromise.then(onCompletion,
+  if(prog.startsWith('import turtle')) {
+    document.getElementById('turtlecanvas').classList.remove('hidden');
+    outputElt.style.width = '100%';
+  }
+  if(prog.startsWith('import webgl')) {
+    document.getElementById('webglcanvas').classList.remove('hidden');
+    outputElt.style.width = '100%';
+  }
+  Sk.misceval.asyncToPromise(function() {
+    return Sk.importMainWithBody("<stdin>", false, prog, true);
+  }).then(onCompletion,
   function(err) {
+    // TODO use this hack to change line numbers if we want to prepend some python lines
+    // eg. max = lambda _: 'Without using max !'
+    // if(err.traceback) {
+    //   err.traceback.forEach(tb => {
+    //     console.info(tb)
+    //     if(tb && tb.lineno > -1) {
+    //       tb.lineno -= x;
+    //     }
+    //   });
+    // }
     let msg = err.toString();
     if(!_over) {
       document.getElementById('output').innerHTML += `<div class="error">${msg}</div>`;
@@ -317,7 +333,11 @@ function loadUser(cb) {
       return json;
     }).then(data => {
       // console.info(JSON.stringify(data, '', ' '));
+      // console.info(data.student);
       cb(data.student);
+    }).catch(err => {
+      console.warn('Unable to fetch user', err);
+      cb(null);
     });
   } else {
     cb(null);
@@ -388,6 +408,26 @@ function updateAchievements() {
   }
 }
 
+
+const skExternalLibs = {
+  './data.js': './lib/skulpt/externals/data.js',
+  './snap.js': './lib/skulpt/externals/snap.js'
+};
+
+function builtinRead(file) {
+  // console.log("Attempting file: " + Sk.ffi.remapToJs(file));
+  if (skExternalLibs[file] !== undefined) {
+    return Sk.misceval.promiseToSuspension(
+      fetch(skExternalLibs[file]).then(
+        function (resp){ return resp.text(); }
+      ));
+  }
+  if (Sk.builtinFiles === undefined || Sk.builtinFiles.files[file] === undefined) {
+    throw "File not found: '" + file + "'";
+  }
+  return Sk.builtinFiles.files[file];
+}
+
 function init(){
   let purl = new URL(window.location.href);
   if(purl && purl.searchParams) {
@@ -395,11 +435,16 @@ function init(){
     if(index) {
       _exerciseIdx = index;
     }
-    let autostart = purl.searchParams.get("autostart");
-    if(autostart !== null) {
-      runit();
-    }
   }
+
+  (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'turtlecanvas';
+  Sk.onAfterImport = function(library) {
+    console.info('Imported', library);
+  };
+
+  marked.setOptions({
+    gfm: true
+  });
 
   document.getElementById('logoutBtn').addEventListener('click', logout);
   document.getElementById('runbtn').addEventListener('click', runit);

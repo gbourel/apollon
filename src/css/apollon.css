@@ -16,6 +16,11 @@ code {
   font-variant: small-caps;
   color: #fece3e;
 }
+#progress {
+  height: 48px;
+  width: 100%;
+  color: #234968;
+}
 
 /* Menu */
 #mainmenu {
@@ -31,6 +36,16 @@ code {
 }
 .c-card > div {
   border-color: #3772a5;
+}
+#title {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+@media (max-width: 850px) {
+  #title {
+    font-size: 1.3rem;
+    line-height: 1.8rem;
+  }
 }
 
 /* Src / Output */

@@ -124,18 +124,20 @@
     <p id="instruction" class="py-2"></p>
   </header>
   <main id="main" class="hidden">
-    <div class="flex">
+    <div class="flex flex-wrap">
       <div id="pythonsrc"
         class="w-full md:w-1/2 font-mono text-sm bg-gray-900 rounded text-green-400 border-2 border-zinc-500 resize-none">
       </div>
+      <!-- If you want turtle graphics include a canvas -->
+      <div id="turtlecanvas" class="hidden w-full md:w-1/2"></div>
+      <!-- <canvas id="webglcanvas" height="248" width="400" class="w-full md:w-1/2"></canvas> -->
       <div class="w-full md:w-1/2 font-mono text-sm border-2 bg-stone-100 text-green-900 border-zinc-500 p-2" id="output"></div>
-      <div id="mycanvas"></div>
     </div>
     <button id="runbtn" class="bg-blue-500 rounded my-2 p-2 shadow-md" type="button">Run</button>
     <button id="resetbtn" class="bg-purple-700 rounded mx-4 my-2 p-2 shadow-md disabled:bg-gray-600 disabled:text-gray-400" type="button">Réinitialiser</button>
     <button id="homebtn" class="bg-slate-500 float-right rounded my-2 p-2 shadow-md" type="button">Home</button>
   </main>
-  <!-- If you want turtle graphics include a canvas -->
+
 
   <div id="overlay" class="hidden">
     <img src="img/success.svg">
@@ -155,7 +157,7 @@
   </div>
   <span id="version"></span>
 
-  <script src="lib/skulpt/skulpt.es5.min.js" type="text/javascript"></script>
+  <script src="lib/skulpt/skulpt.min.js" type="text/javascript"></script>
   <script src="lib/skulpt/skulpt-stdlib.js" type="text/javascript"></script>
   <script src="lib/sha1.js" type="text/javascript"></script>
   <script src="lib/sha256.js" type="text/javascript"></script>
