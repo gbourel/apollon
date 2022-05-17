@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.4.3';
+const VERSION = 'v0.5.0';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor
@@ -73,7 +73,7 @@ function updateListTx() {
   }
 }
 
-function displayExercisesList() {
+function displayExercisesNav() {
   const enabled = ['#ffeebc', '#366f9f', '#234968'];
   const disabled = ['#aaaaaa', '#333333', '#777777'];
   const MARKER_RADIUS = 12;
@@ -197,6 +197,7 @@ function displayExercise() {
   menu.style.transform = 'translate(0, 100vh)';
   main.classList.remove('hidden');
 
+  // FIXME use all exercises
   _exercise = _exercises[_exerciseIdx];
 
   if (_exercise) {
@@ -246,7 +247,7 @@ function displayExercise() {
     // history.pushState(null, '', '/');
   }
 
-  displayExercisesList();
+  displayExercisesNav();
 
   if(!_pythonEditor) {
     _pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
