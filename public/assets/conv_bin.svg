@@ -28,8 +28,8 @@
      id="namedview56"
      showgrid="false"
      inkscape:zoom="2.4859223"
-     inkscape:cx="81.112875"
-     inkscape:cy="119.16524"
+     inkscape:cx="129.18356"
+     inkscape:cy="130.42867"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -74,7 +74,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -178,7 +178,7 @@
            id="tspan985"
            x="11.333287"
            y="12.49089"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#961313;fill-opacity:1;stroke-width:0.26458332">1</tspan></text>
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#961313;fill-opacity:1;stroke-width:0.26458332">0</tspan></text>
     </g>
     <g
        transform="matrix(1.4941254,0,0,1.4941254,7.4622226,13.794726)"
@@ -316,7 +316,7 @@
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#961313;fill-opacity:1;stroke-width:0.26458332"
            y="12.49089"
            x="11.333287"
-           id="tspan1039">1</tspan></text>
+           id="tspan1039">0</tspan></text>
     </g>
     <g
        id="g1061"
@@ -362,7 +362,7 @@
            id="tspan1057"
            x="11.333287"
            y="12.49089"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#961313;fill-opacity:1;stroke-width:0.26458332">1</tspan></text>
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#961313;fill-opacity:1;stroke-width:0.26458332">0</tspan></text>
       <text
          id="text1083"
          y="12.80719"
