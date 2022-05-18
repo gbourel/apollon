@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.5.0';
+const VERSION = 'v0.5.2';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor
@@ -80,111 +80,109 @@ function displayExercisesNav() {
   const MARKER_PX = 24;
   const MARKER_PY = 24;
   const MARKER_W = 42;
-  if(main === null) {
-    let elt = document.getElementById('progress');
-    let sp = Snap('#progress');
-    sp.clear();
-    elt.classList.remove('hidden')
+  let elt = document.getElementById('progress');
+  let sp = Snap('#progress');
+  sp.clear();
+  elt.classList.remove('hidden')
 
-    main = sp.g();
-    markers = [];
-    for (let i = 0; i < _exercises.length; i++) {
-      let x = MARKER_PX + MARKER_W*i;
-      let done  = _user.results.find(r => r.exerciseId === _exercises[i].id && r.done === true)
-      let colors = (done ? enabled : disabled);
-      let marker = sp.circle(x, MARKER_PY, MARKER_RADIUS);
-      marker.attr({
-        fill: colors[0],
-        stroke: _exerciseIdx === i ? '#006CC5' : colors[1],
-        stokeWidth: 12
-      });
-      let label = sp.text(x, MARKER_PX + 5, ''+i);
-      label.attr({
-        fill: _exerciseIdx === i ? '#006CC5' : colors[2],
-        style: 'font-size:15px;text-align:center;text-anchor:middle;'
-      });
-      let group = sp.g(marker, label);
-      group.attr({
-        cursor: 'pointer'
-      });
-      group.click((evt) => {
-        _exerciseIdx = i;
-        displayExercise();
-      });
-      group.hover(evt => {
-        group.animate({
-          transform: "s1.4", // Basic rotation around a point. No frills.
-        }, 100);
-      }, evt => {
-        group.animate({
-          transform: "s1", // Basic rotation around a point. No frills.
-        }, 100);
-      });
-      markers.push(group);
-      main.add(group)
-    }
-    let mp = sp.circle(MARKER_PX-4, MARKER_PX, MARKER_RADIUS);
-      mp.attr({
-        fill: enabled[0],
-        stroke: enabled[1],
-        stokeWidth: 12
-      });
-    let lp = sp.text(MARKER_PX-4, MARKER_PY + 5, '<');
-    lp.attr({
-      fill: enabled[2],
+  let main = sp.g();
+  markers = [];
+  for (let i = 0; i < _exercises.length; i++) {
+    let x = MARKER_PX + MARKER_W*i;
+    let done  = _user.results.find(r => r.exerciseId === _exercises[i].id && r.done === true)
+    let colors = (done ? enabled : disabled);
+    let marker = sp.circle(x, MARKER_PY, MARKER_RADIUS);
+    marker.attr({
+      fill: colors[0],
+      stroke: _exerciseIdx === i ? '#006CC5' : colors[1],
+      stokeWidth: 12
+    });
+    let label = sp.text(x, MARKER_PX + 5, ''+i);
+    label.attr({
+      fill: _exerciseIdx === i ? '#006CC5' : colors[2],
       style: 'font-size:15px;text-align:center;text-anchor:middle;'
     });
-    const previous = sp.g(mp, lp);
-    previous.attr({
-      'display': 'none',
-      'cursor': 'pointer'
+    let group = sp.g(marker, label);
+    group.attr({
+      cursor: 'pointer'
     });
-    previous.click((evt) => {
-      console.info('TODO previous');
+    group.click((evt) => {
+      _exerciseIdx = i;
+      displayExercise();
     });
-    previous.hover(evt => {
-      previous.animate({
+    group.hover(evt => {
+      group.animate({
         transform: "s1.4", // Basic rotation around a point. No frills.
       }, 100);
     }, evt => {
-      previous.animate({
+      group.animate({
         transform: "s1", // Basic rotation around a point. No frills.
       }, 100);
     });
-    let mn = sp.circle(MARKER_PX-4, MARKER_PX, MARKER_RADIUS);
-      mn.attr({
-        fill: enabled[0],
-        stroke: enabled[1],
-        stokeWidth: 12
-      });
-    let ln = sp.text(MARKER_PX-4, MARKER_PY + 5, '<');
-    ln.attr({
-      fill: enabled[2],
-      style: 'font-size:15px;text-align:center;text-anchor:middle;'
+    markers.push(group);
+    main.add(group)
+  }
+  let mp = sp.circle(MARKER_PX-4, MARKER_PX, MARKER_RADIUS);
+    mp.attr({
+      fill: enabled[0],
+      stroke: enabled[1],
+      stokeWidth: 12
     });
-    const next = sp.g(mn, ln);
-    next.attr({
-      'display': 'none',
-      'cursor': 'pointer'
+  let lp = sp.text(MARKER_PX-4, MARKER_PY + 5, '<');
+  lp.attr({
+    fill: enabled[2],
+    style: 'font-size:15px;text-align:center;text-anchor:middle;'
+  });
+  const previous = sp.g(mp, lp);
+  previous.attr({
+    'display': 'none',
+    'cursor': 'pointer'
+  });
+  previous.click((evt) => {
+    console.info('TODO previous');
+  });
+  previous.hover(evt => {
+    previous.animate({
+      transform: "s1.4", // Basic rotation around a point. No frills.
+    }, 100);
+  }, evt => {
+    previous.animate({
+      transform: "s1", // Basic rotation around a point. No frills.
+    }, 100);
+  });
+  let mn = sp.circle(MARKER_PX-4, MARKER_PX, MARKER_RADIUS);
+    mn.attr({
+      fill: enabled[0],
+      stroke: enabled[1],
+      stokeWidth: 12
     });
-    next.click((evt) => {
-      console.info('TODO next');
-    });
-    next.hover(evt => {
-      next.animate({
-        transform: "s1.4", // Basic rotation around a point. No frills.
-      }, 100);
-    }, evt => {
-      next.animate({
-        transform: "s1", // Basic rotation around a point. No frills.
-      }, 100);
-    });
+  let ln = sp.text(MARKER_PX-4, MARKER_PY + 5, '<');
+  ln.attr({
+    fill: enabled[2],
+    style: 'font-size:15px;text-align:center;text-anchor:middle;'
+  });
+  const next = sp.g(mn, ln);
+  next.attr({
+    'display': 'none',
+    'cursor': 'pointer'
+  });
+  next.click((evt) => {
+    console.info('TODO next');
+  });
+  next.hover(evt => {
+    next.animate({
+      transform: "s1.4", // Basic rotation around a point. No frills.
+    }, 100);
+  }, evt => {
+    next.animate({
+      transform: "s1", // Basic rotation around a point. No frills.
+    }, 100);
+  });
 
-    if(MARKER_PX + MARKER_W*markers.length > elt.clientWidth) {
-      let overflow = (MARKER_PX + MARKER_W*markers.length) - elt.clientWidth;
-      console.info('Too large', overflow / MARKER_W);
-      delta_x = Math.round(overflow / MARKER_W);
-    }
+  if(MARKER_PX + MARKER_W*markers.length > elt.clientWidth) {
+    let overflow = (MARKER_PX + MARKER_W*markers.length) - elt.clientWidth;
+    console.info('Too large', overflow / MARKER_W);
+    delta_x = Math.round(overflow / MARKER_W);
   }
 }
 
