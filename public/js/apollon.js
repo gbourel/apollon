@@ -33,8 +33,9 @@ function loadTestsCSV(csv) {
     if (val.length > 1) {
       _tests.push({
         'python': val[0],
-        'value': val[1]
-      })
+        'value': val[1],
+        'option': val[2]
+      });
     }
   }
 }
@@ -195,7 +196,6 @@ function displayExercise() {
   menu.style.transform = 'translate(0, 100vh)';
   main.classList.remove('hidden');
 
-  // FIXME use all exercises
   _exercise = _exercises[_exerciseIdx];
 
   if (_exercise) {
@@ -350,19 +350,24 @@ function onCompletion(mod) {
   if(_tests.length > 0 && _tests.length === _output.length) {
     nbFailed = 0;
     for (let i = 0 ; i < _tests.length; i++) {
-      let line = document.importNode(lineTemplate.content, true);
-      let cells = line.querySelectorAll('td');
-      cells[0].textContent = _tests[i].python;
-      cells[1].textContent = _tests[i].value.trim();
-      cells[2].textContent = _output[i].trim();
+      let line = null;
+      if(_tests[i].option !== 'hide') {
+        line = document.importNode(lineTemplate.content, true);
+        let cells = line.querySelectorAll('td');
+        cells[0].textContent = _tests[i].python;
+        cells[1].textContent = _tests[i].value.trim();
+        cells[2].textContent = _output[i].trim();
+      }
       if(_tests[i].value.trim() !== _output[i].trim()) {
         nbFailed += 1;
-        line.querySelector('tr').classList.add('ko');
+        line && line.querySelector('tr').classList.add('ko');
       } else {
-        line.querySelector('tr').classList.add('ok');
+        line && line.querySelector('tr').classList.add('ok');
       }
-      let tbody = table.querySelector('tbody');
-      tbody.append(line);
+      if(line) {
+        let tbody = table.querySelector('tbody');
+        tbody.append(line);
+      }
     }
     if (nbFailed === 0) {
       const answer = sha256(_output);
@@ -389,7 +394,9 @@ function onCompletion(mod) {
     content = `Succès des ${_tests.length} tests`;
   }
   elt.innerHTML += `<div class="result">${content}</div>`;
-  elt.appendChild(table);
+  if(_tests.find(t => t.option !== 'hide')){
+    elt.appendChild(table);
+  }
   document.getElementById('output').appendChild(elt);
 }
 
@@ -425,7 +432,11 @@ function runit() {
   });
   prog += "\nprint('### END_OF_USER_INPUT ###')";
   for (let t of _tests) {
-    prog += "\n" + t.python;
+    let instruction = t.python.trim();
+    if(!instruction.startsWith('print')) {
+      instruction = `print(${instruction})`;
+    }
+    prog += "\n" + instruction;
   }
   _output = [];
   _over = false;
@@ -607,6 +618,8 @@ function init(){
     if(index) {
       _exerciseIdx = index;
     }
+    let challenge = purl.searchParams.get('challenge');
+    console.info('Challenge', challenge)
   }
 
   (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'turtlecanvas';
@@ -642,7 +655,6 @@ function init(){
     }
   });
   addEventListener('popstate', evt => {
-    console.info(evt.state);
     if(evt.state && evt.state.level) {
       loadExercises(evt.state.level);
     } else {
