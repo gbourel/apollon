@@ -343,18 +343,30 @@ function registerSuccess(exerciseId, answer){
   }
 }
 
+
 // On program completion
 function onCompletion(mod) {
-  let failed = _tests.length;
+  let nbFailed = _tests.length;
+  let table = document.importNode(document.querySelector('#results-table').content, true);
+  let lineTemplate = document.querySelector('#result-line');
   if(_tests.length > 0 && _tests.length === _output.length) {
-    failed = 0;
+    nbFailed = 0;
     for (let i = 0 ; i < _tests.length; i++) {
+      let line = document.importNode(lineTemplate.content, true);
+      let cells = line.querySelectorAll('td');
+      cells[0].textContent = _tests[i].python;
+      cells[1].textContent = _tests[i].value.trim();
+      cells[2].textContent = _output[i].trim();
       if(_tests[i].value.trim() !== _output[i].trim()) {
-        ok = false;
-        failed += 1;
+        nbFailed += 1;
+        line.querySelector('tr').classList.add('ko');
+      } else {
+        line.querySelector('tr').classList.add('ok');
       }
+      let tbody = table.querySelector('tbody');
+      tbody.append(line);
     }
-    if (failed === 0) {
+    if (nbFailed === 0) {
       const answer = sha256(_output);
       if(parent) {
         parent.window.postMessage({
@@ -366,13 +378,21 @@ function onCompletion(mod) {
       displaySuccess();
     }
   }
-  if(failed > 0) {
-    let content = `Résultat : ${_tests.length} test`;
+  const elt = document.createElement('div');
+  let content = '';
+  if(nbFailed > 0) {
+    elt.classList.add('failed');
+    content = `Résultat : ${_tests.length} test`;
     if(_tests.length > 1) { content += 's'; }
-    content += `, ${failed} échec`
-    if(failed > 1) { content += 's'; }
-    document.getElementById('output').innerHTML += `<div class="failed">${content}</div>`;
+    content += `, ${nbFailed} échec`
+    if(nbFailed > 1) { content += 's'; }
+  } else {
+    elt.classList.add('success');
+    content = `Succès des ${_tests.length} tests`;
   }
+  elt.innerHTML += `<div class="result">${content}</div>`;
+  elt.appendChild(table);
+  document.getElementById('output').appendChild(elt);
 }
 
 // Python script stdout
@@ -544,7 +564,7 @@ function updateAchievements() {
     let total =  _user.exercises[`level${i}`];
     let done = 0;
     for (let r of _user.results){
-      if(r.level === i) {
+      if(r.level === i && r.done) {
         done++;
       }
     }

@@ -1129,10 +1129,36 @@ code {
   font-weight: bold;
 }
 
-.failed {
+.failed .result {
   color: #eb9800;
   font-weight: bold;
   margin-top: 1rem;
+}
+
+.success .result {
+  color: #0f7e0f;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+.failed table, .success table {
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.failed td, .success td {
+  color: #595959;
+  border: 1px solid #475569;
+  padding: 3px 6px;
+  text-align: center;
+}
+
+.failed tr.ok td, .success tr.ok td {
+  color: #0f7e0f;
+}
+
+.failed tr.ko td, .success tr.ko td {
+  color: #a73907;
 }
 
 /* Loading */
