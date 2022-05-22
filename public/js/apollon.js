@@ -391,7 +391,11 @@ function onCompletion(mod) {
     if(nbFailed > 1) { content += 's'; }
   } else {
     elt.classList.add('success');
-    content = `Succès des ${_tests.length} tests`;
+    if(_tests.length > 1) {
+      content = `Succès des ${_tests.length} tests`;
+    } else {
+      content = `Succès de ${_tests.length} test`;
+    }
   }
   elt.innerHTML += `<div class="result">${content}</div>`;
   if(_tests.find(t => t.option !== 'hide')){
