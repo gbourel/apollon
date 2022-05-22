@@ -6,8 +6,10 @@ Exercices de programmation Python en ligne.
 
 Basé sur skulpt.
 
+### Version
+
+* v0.5.4 correction des tabulations / espace. Indentation par défaut : 4 espaces.
+
 ## TODO
 
- * Programme dans sessionStorage
- * User profile
- * Save src in localStorage using exercise and user ids
+ * Comparaison avec autres versions.

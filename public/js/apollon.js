@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.5.2';
+const VERSION = 'v0.5.4';
 document.getElementById('version').textContent = VERSION;
 
 let _pythonEditor = null; // Codemirror editor
@@ -187,6 +187,20 @@ function displayExercisesNav() {
   }
 }
 
+function initPythonEditor() {
+  _pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
+    value: "print('Hello world')",
+    mode:  "python",
+    lineNumbers: true,
+    theme: 'monokai',
+    indentUnit: 4,
+    extraKeys: {
+      'Tab': (cm) => cm.execCommand("indentMore"),
+      'Shift-Tab': (cm) => cm.execCommand("indentLess"),
+      'Ctrl-Enter': runit
+    }
+  });
+}
 
 function displayExercise() {
   // const title = document.getElementById('title');
@@ -202,12 +216,7 @@ function displayExercise() {
     let prog = '';
     let lastprog = localStorage.getItem(getProgKey());
     if(!_pythonEditor) {
-      _pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
-        value: "print('Hello world')",
-        mode:  "python",
-        lineNumbers: true,
-        theme: 'monokai'
-      });
+      initPythonEditor();
     }
     loadTestsCSV(_exercise.tests);
     // title.innerHTML = _exercise.title || 'Entrainement';
@@ -239,22 +248,11 @@ function displayExercise() {
     }
     _pythonEditor.setValue(prog);
   } else {
+    if(!_pythonEditor) { initPythonEditor(); }
     instruction.innerHTML = marked.parse('**Bravo !** Tous les exercices de ce niveau sont terminés !');
-
-    // displayMenu();
-    // history.pushState(null, '', '/');
   }
 
   displayExercisesNav();
-
-  if(!_pythonEditor) {
-    _pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
-      value: "print('Hello world')",
-      mode:  "python",
-      lineNumbers: true,
-      theme: 'monokai'
-    });
-  }
 }
 
 // Go to next exercise
@@ -647,14 +645,11 @@ function init(){
   document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));
   document.getElementById('profileMenuBtn').addEventListener('click', toggleMenu);
 
-  // run script on CTRL + Enter shortcut
+  // Save script on keystroke
   document.addEventListener('keyup', evt => {
     if(evt.target && evt.target.nodeName === 'TEXTAREA') {
       if(_pythonEditor){
         localStorage.setItem(getProgKey(), _pythonEditor.getValue());
-      }
-      if(evt.key === 'Enter' && evt.ctrlKey && !evt.shiftKey && !evt.altKey) {
-        runit();
       }
     }
   });
@@ -687,24 +682,6 @@ function init(){
           loadExercises(lvl);
           loaded = true;
         }
-      }
-      if(location.hash === '#sandbox') {
-        const main = document.getElementById('main');
-        const menu = document.getElementById('mainmenu');
-        menu.style.transform = 'translate(0, 100vh)';
-        main.classList.remove('hidden');
-        if(!_pythonEditor) {
-          _pythonEditor = CodeMirror(document.getElementById('pythonsrc'), {
-            value: "print('Hello world')",
-            mode:  "python",
-            lineNumbers: true,
-            theme: 'monokai'
-          });
-        }
-        if(localStorage.getItem(getProgKey())) {
-          _pythonEditor.setValue(localStorage.getItem(getProgKey()));
-        }
-        loaded = true;
       }
     }
     if(!loaded) { displayMenu(); }
