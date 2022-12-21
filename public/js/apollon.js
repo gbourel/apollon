@@ -1,17 +1,31 @@
 (function (){
 
-const VERSION = 'v0.5.4';
+const VERSION = 'v0.6.0';
 document.getElementById('version').textContent = VERSION;
+
+const host = window.location.host;
+const dev = host.startsWith('localhost') || host.startsWith('ileauxsciences.test');
+let debug = () => {};
+if(dev || location.href.match('#debug')) {
+  debug = console.info;
+}
 
 let _pythonEditor = null; // Codemirror editor
 let _output = [];     // Current script stdout
 let _nsix = false;    // If embedded in a nsix challenge
 
-const NSIX_LOGIN_URL = 'http://app.nsix.fr/connexion'
-const LCMS_URL = 'https://webamc.nsix.fr';
-const COOKIE_DOMAIN = '.ileauxsciences.test';
 
-let _exercises = [];   // All exercises
+let NSIX_LOGIN_URL = 'https://app.nsix.fr/connexion';
+let LCMS_URL = 'https://webamc.nsix.fr';
+let COOKIE_DOMAIN = '.nsix.fr';
+if(dev) {
+  NSIX_LOGIN_URL = 'http://ileauxsciences.test:4200/connexion'
+  LCMS_URL = 'http://dev.ileauxsciences.test:9976';
+  COOKIE_DOMAIN = '.ileauxsciences.test';
+}
+
+let _journeys = [];    // All journeys
+let _exercises = [];   // All exercises for current journey
 let _exerciseIdx = 0;  // Current exercise index
 let _exercise = null;  // Current exercise
 let _tests = [];       // Tests for current exercise
@@ -283,25 +297,23 @@ function loadExercises(level, pushHistory){
   if(!level) { return console.warn('Missing level'); }
   if(!_user) { return loginRequired(); }
   showLoading();
-  const req = new Request(`${LCMS_URL}/lcms/python/${level}`);
-  fetch(req).then(res => { return res.json(); })
-  .then(data => {
-    _exercises = data;
-    _exerciseIdx = -1;
-    for (let i in _exercises) {
-      if(_exerciseIdx < 0) {
-        let r = _user.results.find(r => r.exerciseId === _exercises[i].id);
-        if(!r || r.done === false) {
-          _exerciseIdx = parseInt(i);
-        }
+
+  let journey = _journeys[level-1];
+  _exercises = journey.challenges;
+  _exerciseIdx = -1;
+  for (let i in _exercises) {
+    if(_exerciseIdx < 0) {
+      let r = _user.results.find(r => r.exerciseId === _exercises[i].id);
+      if(!r || r.done === false) {
+        _exerciseIdx = parseInt(i);
       }
     }
-    hideLoading();
-    if(pushHistory) {
-      history.pushState({'level': level}, '', `/#niveau${level}`);
-    }
-    displayExercise();
-  });
+  }
+  hideLoading();
+  if(pushHistory) {
+    history.pushState({'level': level}, '', `/#niveau${level}`);
+  }
+  displayExercise();
 }
 
 // Reload initial prog
@@ -340,7 +352,7 @@ function registerSuccess(exerciseId, answer){
 }
 
 
-// On program completion
+// On Python script completion
 function onCompletion(mod) {
   let nbFailed = _tests.length;
   let table = document.importNode(document.querySelector('#results-table').content, true);
@@ -522,6 +534,7 @@ function loadUser(cb) {
       cb(data.student);
     }).catch(err => {
       console.warn('Unable to fetch user', err);
+      debug(cb);
       cb(null);
     });
   } else {
@@ -569,22 +582,23 @@ function logout() {
 }
 
 function updateAchievements() {
-  if(!_user || !_user.exercises) { return; }
+  if(!_user || !_journeys) { return; }
   for (let i=1; i<4 ; i++){
     let elt = document.querySelector(`#level-${i} .percent`);
-    let total =  _user.exercises[`level${i}`];
+    let total =  _journeys[i-1].challenges.length;
     let done = 0;
-    for (let r of _user.results){
-      if(r.level === i && r.done) {
+    for (let ch of _journeys[i-1].challenges){
+      let result = _user.results.find(r => r.exerciseId === ch.id);
+      if(result && result.done) {
         done++;
       }
     }
     let percent = 100.0 * done / total;
     let stars = Math.round(percent/20);
     let starsContent = '';
-    for(let i = 1; i <= 5; i++){
+    for(let j = 1; j <= 5; j++){
       let color = 'text-gray-400';
-      if(i <= stars) { color = 'text-yellow-500'; }
+      if(j <= stars) { color = 'text-yellow-500'; }
       starsContent += `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 fill-current ${color}"><path d="M8.128 19.825a1.586 1.586 0 0 1-1.643-.117 1.543 1.543 0 0 1-.53-.662 1.515 1.515 0 0 1-.096-.837l.736-4.247-3.13-3a1.514 1.514 0 0 1-.39-1.569c.09-.271.254-.513.475-.698.22-.185.49-.306.776-.35L8.66 7.73l1.925-3.862c.128-.26.328-.48.577-.633a1.584 1.584 0 0 1 1.662 0c.25.153.45.373.577.633l1.925 3.847 4.334.615c.29.042.562.162.785.348.224.186.39.43.48.704a1.514 1.514 0 0 1-.404 1.58l-3.13 3 .736 4.247c.047.282.014.572-.096.837-.111.265-.294.494-.53.662a1.582 1.582 0 0 1-1.643.117l-3.865-2-3.865 2z"></path></svg>`;
     }
     elt.innerHTML = `&nbsp; ${Math.round(percent)} % terminé`;
@@ -613,7 +627,17 @@ function builtinRead(file) {
   return Sk.builtinFiles.files[file];
 }
 
-function init(){
+function fetchJourney(jid) {
+  return new Promise((resolve, reject) => {
+    const req = new Request(`${LCMS_URL}/lcms/journey/${jid}`);
+    fetch(req).then(res => { return res.json(); })
+    .then(journey => {
+      resolve(journey);
+    });
+  });
+}
+
+async function init(){
   let purl = new URL(window.location.href);
   if(purl && purl.searchParams) {
     let index = purl.searchParams.get("index");
@@ -622,6 +646,14 @@ function init(){
     }
     let challenge = purl.searchParams.get('challenge');
     console.info('Challenge', challenge)
+  }
+
+  // Load journeys
+  let jids = ['b3579a4c-36ea-446b-9218-e38b1ab97595',
+              '81237620-757d-4151-b3a7-efbbeea6ad48',
+              '1f9e97a1-29cf-4abb-a38d-5758373adce2']
+  for (let jid of jids) {
+    _journeys.push(await fetchJourney(jid));
   }
 
   (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'turtlecanvas';
@@ -661,8 +693,10 @@ function init(){
     }
   });
 
-  loadUser((user) => {
+  loadUser(async (user) => {
     // TODO session cache
+    debug('User loaded', user);
+
     if(user) {
       _user = user;
       document.getElementById('username').innerHTML = user.firstName || 'Moi';
