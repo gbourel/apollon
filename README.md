@@ -2,17 +2,16 @@
 
 Exercices de programmation Python en ligne.
 
+[https://python.nsix.fr](https://python.nsix.fr)
+
 ## Description
 
-Basé sur skulpt.
-
-### Version
-
-* v0.5.4 correction des tabulations / espace. Indentation par défaut : 4 espaces.
+Exercices de Python à réaliser diretement en ligne.
 
 ## TODO
 
  * Comparaison avec autres versions.
+ * Indices
 
 ## Développement
 
