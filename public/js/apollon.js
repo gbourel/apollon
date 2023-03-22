@@ -4,7 +4,7 @@ const VERSION = 'v0.6.0';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
-const dev = host.startsWith('localhost') || host.startsWith('ileauxsciences.test');
+const dev = host.startsWith('localhost') || host.indexOf('ileauxsciences.test') >= 0;
 let debug = () => {};
 if(dev || location.href.match('#debug')) {
   debug = console.info;

@@ -13,3 +13,9 @@ Basé sur skulpt.
 ## TODO
 
  * Comparaison avec autres versions.
+
+## Développement
+
+Page HTML basique, pour tester
+
+`live-server public/`
