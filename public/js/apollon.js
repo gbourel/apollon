@@ -609,7 +609,7 @@ function updateAchievements() {
 
 // TODO if pygame !!!
 Sk.main_canvas = document.getElementById("pygamecanvas");
-Sk.imgPath = 'ta/';
+Sk.imgPath = 'test/';
 
 const skExternalLibs = {
   './data.js': './lib/skulpt/externals/data.js',
