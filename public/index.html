@@ -12,7 +12,7 @@
   <div id="loading" class="z-20">
     <img src="img/python.png" alt="Logo Python">
   </div>
-  <div id="profile" class="float-right relative">
+  <div id="profile">
     <button id="login" class="hidden m-5 p-1 shadow-lg bg-yellow-600 rounded px-2 text-slate-00" type="button">Connexion</button>
     <div id="profile-menu" class="hidden mt-5 mr-2">
       <button id="profileMenuBtn" type="button" class="m-1 p-2 bg-slate-900 flex text-xs rounded">
@@ -126,6 +126,7 @@
     </h3>
     <svg id="progress" class="hidden"></svg>
     <p id="instruction"></p>
+    <div id="help" class="hidden" title="Besoin d'aide ?"><img src="img/buoy.svg" alt="Aide"></div>
   </header>
   <main id="main" class="hidden">
     <div class="flex flex-wrap">
@@ -134,6 +135,8 @@
       </div>
       <!-- If you want turtle graphics include a canvas -->
       <div id="turtlecanvas" class="hidden w-full md:w-1/2"></div>
+      <!-- Same for pygame -->
+      <canvas id="pygamecanvas" class="w-full md:w-1/2"></canvas>
       <!-- <canvas id="webglcanvas" height="248" width="400" class="w-full md:w-1/2"></canvas> -->
       <div class="w-full md:w-1/2 font-mono text-sm border-2 bg-stone-100 text-green-900 border-zinc-500 p-2" id="output"></div>
     </div>
@@ -159,6 +162,7 @@
       <button id="login2" class="m-5 p-1 shadow-lg bg-yellow-600 rounded px-2 text-slate-00" type="button">Connexion</button>
     </div>
   </div>
+  <div id="help-panel" class="right-hidden"></div>
   <span id="version"></span>
 
   <template id="results-table">

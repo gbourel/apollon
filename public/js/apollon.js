@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.6.0';
+const VERSION = 'v0.8.0';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
@@ -426,11 +426,11 @@ function outf(text) {
   }
 }
 // Load python modules
-function builtinRead(x) {
-  if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-    throw "File not found: '" + x + "'";
-  return Sk.builtinFiles["files"][x];
-}
+// function builtinRead(x) {
+//   if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+//     throw "File not found: '" + x + "'";
+//   return Sk.builtinFiles["files"][x];
+// }
 
 // Run python script
 function runit() {
@@ -607,10 +607,26 @@ function updateAchievements() {
   }
 }
 
+// TODO if pygame !!!
+Sk.main_canvas = document.getElementById("pygamecanvas");
+Sk.imgPath = 'ta/';
 
 const skExternalLibs = {
   './data.js': './lib/skulpt/externals/data.js',
-  './snap.js': './lib/skulpt/externals/snap.js'
+  './snap.js': './lib/skulpt/externals/snap.js',
+  './pygame.js': './lib/skulpt/externals/pygame/__init__.js',
+  './display.js':  './lib/skulpt/externals/pygame/display.js',
+  './event.js':  './lib/skulpt/externals/pygame/event.js',
+  'src/builtin/image.js': './lib/skulpt/externals/pygame/image.js',
+  './key.js': './lib/skulpt/externals/pygame/key.js',
+  './mouse.js': './lib/skulpt/externals/pygame/mouse.js',
+  './mixer.js': './lib/skulpt/externals/pygame/mixer.js',
+  'src/builtin/time.js': './lib/skulpt/externals/pygame/time.js',
+  './version.js': './lib/skulpt/externals/pygame/version.js',
+  './draw.js': './lib/skulpt/externals/pygame/draw.js',
+  './font.js': './lib/skulpt/externals/pygame/font.js',
+  './transform.js': './lib/skulpt/externals/pygame/transform.js',
+  './locals.js': './lib/skulpt/externals/pygame/locals.js'
 };
 
 function builtinRead(file) {

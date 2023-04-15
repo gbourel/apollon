@@ -15,6 +15,4 @@ Exercices de Python à réaliser diretement en ligne.
 
 ## Développement
 
-Page HTML basique, pour tester
-
-`live-server public/`
+Page HTML basique, pour tester: `npm run dev`
