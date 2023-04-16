@@ -30,6 +30,7 @@ let _exerciseIdx = 0;  // Current exercise index
 let _exercise = null;  // Current exercise
 let _tests = [];       // Tests for current exercise
 let _over = false;     // currently running program is terminated
+let _lastFocus = null; // focused element before program start (for graphical display only)
 
 let _user = null;
 
@@ -440,6 +441,8 @@ function onCompletion(mod) {
     elt.appendChild(table);
   }
   document.getElementById('output').appendChild(elt);
+
+  if(_lastFocus) { _lastFocus.focus(); }
 }
 
 // Python script stdout
@@ -499,6 +502,7 @@ async function loadPygame(prog){
       imgCache[url] = await preloadImg(url);
     }
   }
+  _lastFocus = document.activeElement;
   canvas.focus();
 }
 
@@ -756,9 +760,10 @@ async function init(){
   }
 
   // Load journeys
-  let jids = ['b3579a4c-36ea-446b-9218-e38b1ab97595',
-              '81237620-757d-4151-b3a7-efbbeea6ad48',
-              '1f9e97a1-29cf-4abb-a38d-5758373adce2']
+  let jids = ['b3579a4c-36ea-446b-9218-e38b1ab97595', // initiation
+              '81237620-757d-4151-b3a7-efbbeea6ad48', // 1ere
+              '1f9e97a1-29cf-4abb-a38d-5758373adce2' // Tale
+             ]
   for (let jid of jids) {
     _journeys.push(await fetchJourney(jid));
   }
