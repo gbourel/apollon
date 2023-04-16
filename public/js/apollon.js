@@ -453,16 +453,28 @@ function outf(text) {
 //     throw "File not found: '" + x + "'";
 //   return Sk.builtinFiles["files"][x];
 // }
+async function loadPygame(){
+  debug('Load Pygame');
+  document.getElementById('pygamecanvas').classList.remove('hidden');
+  // in order to avoid async issue while loading pygame : prefetch all dependencies
+  for (let lib in skExternalLibs) {
+    if (lib.match(/\/pygame\//) && !sessionStorage.getItem('extlib_' + lib)) {
+      let res = await fetch(skExternalLibs[lib]);
+      let txt = await res.text();
+      sessionStorage.setItem('extlib_' + lib, txt);
+    }
+  }
+}
 
 // Run python script
-function runit() {
+async function runit() {
   if(_pythonEditor === null) { return; }
   let prog = _pythonEditor.getValue();
   let outputElt = document.getElementById('output');
   outputElt.innerHTML = '';
 
   if (prog.indexOf('pygame') > 0) {
-    document.getElementById('pygamecanvas').classList.remove('hidden');
+    await loadPygame();
   }
 
   Sk.pre = 'output';
@@ -716,9 +728,13 @@ async function init(){
   }
 
   (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'turtlecanvas';
-  Sk.onAfterImport = function(library) {
-    console.info('Imported', library);
-  };
+
+  // Sk.onBeforeImport = function(library) {
+  //   console.info('Importing', library);
+  // };
+  // Sk.onAfterImport = function(library) {
+  //   console.info('Imported', library);
+  // };
 
   marked.setOptions({
     gfm: true
