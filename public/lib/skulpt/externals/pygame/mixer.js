@@ -36,7 +36,6 @@ function mixer_Sound(gbl, loc) {
     }, gbl);
 
     loc.set_volume = new Sk.builtin.func(function (self, volume) {
-        console.warn('TODO set volume !!!', self, volume);
         if (self.audioElt && volume) {
             self.audioElt.volume = volume.v;
         }
@@ -78,7 +77,6 @@ var mixer_Music = function $Music$class_outer(gbl, loc) {
     });
     loc.unload = new Sk.builtin.func(function () {});
     loc.play = new Sk.builtin.func(function (loops, start, fade) {
-        console.info('PLAY !!!', loops, start, fade)
         if(_audioElt) {
             if (loops) {
                 if (loops.v == -1) { _audioElt.loop = true; }
