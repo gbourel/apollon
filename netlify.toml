@@ -4,3 +4,11 @@
     cache-control = '''
     max-age=7200,
     public'''
+
+[[headers]]
+  for = "/img/*"
+  [headers.values]
+    cache-control = '''
+    max-age=7200,
+    public'''
+
