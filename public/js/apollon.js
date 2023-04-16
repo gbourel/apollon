@@ -466,6 +466,7 @@ function runit() {
   }
 
   Sk.pre = 'output';
+  Sk.searchImportUseFullPath = true;
   Sk.configure({
     output: outf,
     read: builtinRead,
@@ -642,18 +643,18 @@ const skExternalLibs = {
   './data.js': './lib/skulpt/externals/data.js',
   './snap.js': './lib/skulpt/externals/snap.js',
   './pygame.js': './lib/skulpt/externals/pygame/__init__.js',
-  './display.js':  './lib/skulpt/externals/pygame/display.js',
-  './event.js':  './lib/skulpt/externals/pygame/event.js',
-  'src/builtin/image.js': './lib/skulpt/externals/pygame/image.js',
-  './key.js': './lib/skulpt/externals/pygame/key.js',
-  './mouse.js': './lib/skulpt/externals/pygame/mouse.js',
-  './mixer.js': './lib/skulpt/externals/pygame/mixer.js',
-  'src/builtin/time.js': './lib/skulpt/externals/pygame/time.js',
-  './version.js': './lib/skulpt/externals/pygame/version.js',
-  './draw.js': './lib/skulpt/externals/pygame/draw.js',
-  './font.js': './lib/skulpt/externals/pygame/font.js',
-  './transform.js': './lib/skulpt/externals/pygame/transform.js',
-  './locals.js': './lib/skulpt/externals/pygame/locals.js'
+  './pygame/display.js':  './lib/skulpt/externals/pygame/display.js',
+  './pygame/event.js':  './lib/skulpt/externals/pygame/event.js',
+  './pygame/image.js': './lib/skulpt/externals/pygame/image.js',
+  './pygame/key.js': './lib/skulpt/externals/pygame/key.js',
+  './pygame/mouse.js': './lib/skulpt/externals/pygame/mouse.js',
+  './pygame/mixer.js': './lib/skulpt/externals/pygame/mixer.js',
+  './pygame/time.js': './lib/skulpt/externals/pygame/time.js',
+  './pygame/version.js': './lib/skulpt/externals/pygame/version.js',
+  './pygame/draw.js': './lib/skulpt/externals/pygame/draw.js',
+  './pygame/font.js': './lib/skulpt/externals/pygame/font.js',
+  './pygame/transform.js': './lib/skulpt/externals/pygame/transform.js',
+  './pygame/locals.js': './lib/skulpt/externals/pygame/locals.js'
 };
 
 function builtinRead(file) {
