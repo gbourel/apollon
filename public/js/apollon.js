@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.8.1';
+const VERSION = 'v0.8.3';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
@@ -32,6 +32,8 @@ let _tests = [];       // Tests for current exercise
 let _over = false;     // currently running program is terminated
 
 let _user = null;
+
+const imgCache = {};
 
 // Callback on exercise achievement
 function displaySuccess() {
@@ -448,16 +450,37 @@ function outf(text) {
   }
 }
 
-async function loadPygame(){
+async function loadPygame(prog){
   debug('Load Pygame');
-  document.getElementById('pygamecanvas').classList.remove('hidden');
+
+  const canvas = document.getElementById('pygamecanvas')
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "rgb(39, 40, 34)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgb(166, 226, 46)";
+  ctx.font = '12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Chargement en cours', canvas.width/2, canvas.height/2);
+  canvas.classList.remove('hidden');
   // in order to avoid async issue while loading pygame : prefetch all dependencies
   for (let lib in skExternalLibs) {
     if (lib.match(/\/pygame\//) && !sessionStorage.getItem('extlib_' + lib)) {
+      debug('Fetch module', lib);
       let res = await fetch(skExternalLibs[lib]);
       let txt = await res.text();
       sessionStorage.setItem('extlib_' + lib, txt);
     }
+  }
+
+  let images = prog.matchAll(/pygame\.image\.load\(['"](.+)['"]\)/g)
+  const loader = document.createElement('canvas');
+  document.body.appendChild(loader);
+
+  for (let img of images) {
+    const url = Sk.imgPath + img[1];
+    const res = await fetch(url);
+    const blob = await res.blob();
+    imgCache[url] = URL.createObjectURL(blob);
   }
 }
 
@@ -469,10 +492,11 @@ async function runit() {
   outputElt.innerHTML = '';
 
   if (prog.indexOf('pygame') > 0) {
-    await loadPygame();
+    await loadPygame(prog);
   }
 
   Sk.pre = 'output';
+  Sk.imgCache = imgCache;
   Sk.searchImportUseFullPath = true;
   Sk.configure({
     output: outf,
