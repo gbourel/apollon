@@ -499,6 +499,7 @@ async function loadPygame(prog){
       imgCache[url] = await preloadImg(url);
     }
   }
+  canvas.focus();
 }
 
 // Run python script
@@ -683,7 +684,6 @@ function updateAchievements() {
   }
 }
 
-// TODO if pygame !!!
 Sk.main_canvas = document.getElementById("pygamecanvas");
 Sk.imgPath = 'test/';
 

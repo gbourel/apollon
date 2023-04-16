@@ -125,6 +125,10 @@ header {
 .failed tr.ko td, .success tr.ko td {
   color: #a73907;
 }
+canvas:focus {
+  outline: none;
+}
+
 /* Loading */
 
 #loading {
