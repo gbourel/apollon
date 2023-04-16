@@ -438,6 +438,11 @@ function runit() {
   let prog = _pythonEditor.getValue();
   let outputElt = document.getElementById('output');
   outputElt.innerHTML = '';
+
+  if (prog.indexOf('pygame') > 0) {
+    document.getElementById('pygamecanvas').classList.remove('hidden');
+  }
+
   Sk.pre = 'output';
   Sk.configure({
     output: outf,

@@ -1086,6 +1086,52 @@ code {
   color: #234968;
 }
 
+header {
+  position: relative;
+}
+
+#help {
+  position: absolute;
+  width: 32px;
+  cursor: help;
+  right: 8px;
+  bottom: 8px;
+  opacity: 0.7;
+  transition: opacity 200ms linear;
+}
+
+#help:hover {
+  opacity: 1;
+}
+
+#help-panel {
+  position: absolute;
+  left: 0;
+  top: 64px;
+  width: 100%;
+  transition: transform 300ms ease-in;
+  background: #2e2e2e;
+  padding: 8px;
+  cursor: zoom-out;
+}
+
+#help-panel > div {
+  border: 1px solid #b4d273;
+  margin: 12px 0;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.hidden-right {
+  transform: translate3d(120%, 0, 0);
+}
+
+#profile {
+  position: absolute;
+  right: 20px;
+  z-index: 5;
+}
+
 /* Menu */
 
 #mainmenu {
