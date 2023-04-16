@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.8.3';
+const VERSION = 'v0.8.4';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
@@ -454,6 +454,18 @@ function outf(text) {
   }
 }
 
+function preloadImg(url) {
+  return new Promise(async (resolve, reject) => {
+    const res = await fetch(url);
+    const reader = new FileReader();
+    const blob = await res.blob();
+    reader.onload = (e) => {
+      resolve(e.target.result);
+    }
+    reader.readAsDataURL(blob);
+  });
+}
+
 async function loadPygame(prog){
   debug('Load Pygame');
   const output = document.getElementById('output');
@@ -484,9 +496,7 @@ async function loadPygame(prog){
   for (let img of images) {
     const url = Sk.imgPath + img[1];
     if (!imgCache[url]) {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      imgCache[url] = URL.createObjectURL(blob);
+      imgCache[url] = await preloadImg(url);
     }
   }
 }

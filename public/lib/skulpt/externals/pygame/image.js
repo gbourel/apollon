@@ -8,16 +8,14 @@ var $builtinmodule = function (name) {
             return http.status === 200;
         }
 
-        if (imageExists(Sk.imgPath + Sk.ffi.remapToJs(filename))) {
+        const src = Sk.imgPath + Sk.ffi.remapToJs(filename);
+        if ((Sk.imgCache && Sk.imgCache[src]) || imageExists(Sk.imgPath + Sk.ffi.remapToJs(filename))) {
             return Sk.misceval.promiseToSuspension(new Promise(function (resolve) {
-                const src = Sk.imgPath + Sk.ffi.remapToJs(filename);
                 const img = new Image();
                 img.crossOrigin='';
                 if(Sk.imgCache && Sk.imgCache[src]) {
-                    console.info('Use cached', src);
                     img.src = Sk.imgCache[src];
                 } else {
-                    console.info('Load image', src);
                     img.src = src;
                 }
                 img.onload = function () {
