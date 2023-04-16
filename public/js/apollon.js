@@ -660,10 +660,15 @@ const skExternalLibs = {
 function builtinRead(file) {
   // console.log("Attempting file: " + Sk.ffi.remapToJs(file));
   if (skExternalLibs[file] !== undefined) {
+    let src = sessionStorage.getItem('extlib_' + file);
+    if(src) { return src; }
     return Sk.misceval.promiseToSuspension(
-      fetch(skExternalLibs[file]).then(
-        function (resp){ return resp.text(); }
-      ));
+      fetch(skExternalLibs[file]).then(function (resp){
+        return resp.text();
+      }).then(txt => {
+        sessionStorage.setItem('extlib_' + file, txt);
+        return txt;
+      }));
   }
   if (Sk.builtinFiles === undefined || Sk.builtinFiles.files[file] === undefined) {
     throw "File not found: '" + file + "'";
