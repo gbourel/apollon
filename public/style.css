@@ -1097,7 +1097,7 @@ header {
 }
 
 #help-panel {
-  position: absolute;
+  position: fixed;
   left: 0;
   top: 64px;
   width: 100%;
