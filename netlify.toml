@@ -1,0 +1,6 @@
+[[headers]]
+  for = "/test/*"
+  [headers.values]
+    cache-control = '''
+    max-age=7200,
+    public'''
