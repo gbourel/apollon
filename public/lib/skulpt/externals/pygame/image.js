@@ -14,8 +14,10 @@ var $builtinmodule = function (name) {
                 const img = new Image();
                 img.crossOrigin='';
                 if(Sk.imgCache && Sk.imgCache[src]) {
+                    console.info('Use cached', src);
                     img.src = Sk.imgCache[src];
                 } else {
+                    console.info('Load image', src);
                     img.src = src;
                 }
                 img.onload = function () {

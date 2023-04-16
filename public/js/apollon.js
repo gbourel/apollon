@@ -230,9 +230,13 @@ function displayExercise() {
   const main = document.getElementById('main');
   const menu = document.getElementById('mainmenu');
   const help = document.getElementById('help');
+  const pgcanvas = document.getElementById('pygamecanvas');
+  const output = document.getElementById('output');
   menu.style.transform = 'translate(0, 100vh)';
   main.classList.remove('hidden');
   help.classList.remove('hidden');
+  pgcanvas.classList.add('hidden');
+  output.classList.add('md:w-1/2');
 
   _exercise = _exercises[_exerciseIdx];
 
@@ -452,7 +456,7 @@ function outf(text) {
 
 async function loadPygame(prog){
   debug('Load Pygame');
-
+  const output = document.getElementById('output');
   const canvas = document.getElementById('pygamecanvas')
   const ctx = canvas.getContext("2d");
   ctx.fillStyle = "rgb(39, 40, 34)";
@@ -462,6 +466,7 @@ async function loadPygame(prog){
   ctx.textAlign = 'center';
   ctx.fillText('Chargement en cours', canvas.width/2, canvas.height/2);
   canvas.classList.remove('hidden');
+  output.classList.remove('md:w-1/2');
   // in order to avoid async issue while loading pygame : prefetch all dependencies
   for (let lib in skExternalLibs) {
     if (lib.match(/\/pygame\//) && !sessionStorage.getItem('extlib_' + lib)) {
@@ -478,9 +483,11 @@ async function loadPygame(prog){
 
   for (let img of images) {
     const url = Sk.imgPath + img[1];
-    const res = await fetch(url);
-    const blob = await res.blob();
-    imgCache[url] = URL.createObjectURL(blob);
+    if (!imgCache[url]) {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      imgCache[url] = URL.createObjectURL(blob);
+    }
   }
 }
 
