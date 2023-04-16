@@ -59,6 +59,9 @@ function displayMenu() {
   const progress = document.getElementById('progress');
   const main = document.getElementById('main');
   const instruction = document.getElementById('instruction');
+  const help = document.getElementById('help');
+  help.classList.add('hidden');
+  hideHelp();
   instruction.innerHTML = '';
   progress.classList.add('hidden');
   main.classList.add('hidden');
@@ -216,13 +219,18 @@ function initPythonEditor() {
   });
 }
 
+/**
+ * Affiche l'exercice en cours (_exercises[_exerciseIdx]).
+ */
 function displayExercise() {
   // const title = document.getElementById('title');
   const instruction = document.getElementById('instruction');
   const main = document.getElementById('main');
   const menu = document.getElementById('mainmenu');
+  const help = document.getElementById('help');
   menu.style.transform = 'translate(0, 100vh)';
   main.classList.remove('hidden');
+  help.classList.remove('hidden');
 
   _exercise = _exercises[_exerciseIdx];
 
@@ -250,14 +258,28 @@ function displayExercise() {
     } else {
       document.getElementById('resetbtn').classList.add('hidden');
     }
+    let helpBtn = document.getElementById('help');
+    let helpPanel = document.getElementById('help-panel');
+    helpPanel.innerHTML = '';
+    if(_exercise.help) {
+      let helps = _exercise.help.split(/\n/);
+      for(let msg of helps) {
+        if(msg.startsWith('* ')) { msg = msg.substring(2, msg.length); }
+        let c = document.createElement('div');
+        c.innerHTML = marked.parse(msg);
+        helpPanel.appendChild(c);
+      }
+      helpBtn.classList.remove('hidden');
+    } else {
+      helpBtn.classList.add('hidden');
+    }
+    let result = _user.results?.find(r => r.exerciseId === _exercise.id);
+    // console.info(result);
     if(lastprog && lastprog.length) {
       prog = lastprog;
     } else {
-      if(_user && _user.results) {
-        let found = _user.results.find(r => r.exerciseId === _exercise.id);
-        if (found) {
-          prog = found.content;
-        }
+      if (result) {
+        prog = result.content;
       }
     }
     _pythonEditor.setValue(prog);
@@ -658,6 +680,16 @@ function fetchJourney(jid) {
   });
 }
 
+function showHelp(show=true){
+  let panel = document.getElementById('help-panel');
+  if(show) {
+    panel.classList.remove('hidden-right');
+  } else {
+    panel.classList.add('hidden-right');
+  }
+}
+function hideHelp() { showHelp(false); }
+
 async function init(){
   let purl = new URL(window.location.href);
   if(purl && purl.searchParams) {
@@ -697,6 +729,8 @@ async function init(){
   document.getElementById('level-2').addEventListener('click', () => loadExercises(2, true));
   document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));
   document.getElementById('profileMenuBtn').addEventListener('click', toggleMenu);
+  document.getElementById('help').addEventListener('click', showHelp);
+  document.getElementById('help-panel').addEventListener('click', hideHelp);
 
   // Save script on keystroke
   document.addEventListener('keyup', evt => {
