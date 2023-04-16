@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.8.0';
+const VERSION = 'v0.8.1';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
@@ -447,12 +447,7 @@ function outf(text) {
     _output.push(text.trim());
   }
 }
-// Load python modules
-// function builtinRead(x) {
-//   if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-//     throw "File not found: '" + x + "'";
-//   return Sk.builtinFiles["files"][x];
-// }
+
 async function loadPygame(){
   debug('Load Pygame');
   document.getElementById('pygamecanvas').classList.remove('hidden');
