@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.9.0';
+const VERSION = 'v0.9.1';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
@@ -342,7 +342,7 @@ function loadExercises(level, pushHistory){
   }
   hideLoading();
   if(pushHistory) {
-    history.pushState({'level': level}, '', `/#niveau${level}`);
+    history.pushState({'level': level}, '', `/#parcours${level}`);
   }
   displayExercise();
 }
@@ -667,7 +667,7 @@ function logout() {
 
 function updateAchievements() {
   if(!_user || !_journeys) { return; }
-  for (let i=1; i<4 ; i++){
+  for (let i = 1; i < 5 ; i++){  // FIXME dynamic level count
     let elt = document.querySelector(`#level-${i} .percent`);
     let total =  _journeys[i-1].challenges.length;
     let done = 0;
@@ -795,7 +795,7 @@ async function init(){
   document.getElementById('level-1').addEventListener('click', () => loadExercises(1, true));
   document.getElementById('level-2').addEventListener('click', () => loadExercises(2, true));
   document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));
-  document.getElementById('game2d').addEventListener('click', () => loadExercises(4, true));
+  document.getElementById('level-4').addEventListener('click', () => loadExercises(4, true));
   document.getElementById('profileMenuBtn').addEventListener('click', toggleMenu);
   document.getElementById('help').addEventListener('click', showHelp);
   document.getElementById('help-panel').addEventListener('click', hideHelp);
@@ -832,7 +832,7 @@ async function init(){
 
     let loaded = false;
     if(location.hash) {
-      let levelpath = location.hash.match('#niveau(\\d)');
+      let levelpath = location.hash.match('#parcours(\\d)');
       if(levelpath) {
         let lvl = parseInt(levelpath[1]);
         if(lvl !== NaN) {
