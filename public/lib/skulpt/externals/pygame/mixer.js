@@ -88,6 +88,10 @@ var mixer_Music = function $Music$class_outer(gbl, loc) {
                     console.warn('TODO multiple loops');
                 }
             }
+            // FIXME call cnt ?
+            if (Sk.callCount && Sk.callCount['pygame.mixer.music.play'] !== undefined) {
+                Sk.callCount['pygame.mixer.music.play']++;
+            }
             _audioElt.play();
         } else {
             console.warn('Cannot play audio before load.');
