@@ -417,6 +417,11 @@ function onCompletion(mod) {
   let nbFailed = _tests.length;
   let table = document.importNode(document.querySelector('#results-table').content, true);
   let lineTemplate = document.querySelector('#result-line');
+  let hasHelp = false;
+  _tests.forEach(t => {
+    if (t && t.option && t.option !== 'hide') { hasHelp = true; }
+  });
+  table.querySelector('thead td.aide').style.display = hasHelp ? 'table-cell' : 'none';
   if(_tests.length > 0 && _tests.length === _output.length) {
     nbFailed = 0;
     for (let i = 0 ; i < _tests.length; i++) {
@@ -427,6 +432,12 @@ function onCompletion(mod) {
         cells[0].textContent = _tests[i].python;
         cells[1].textContent = _tests[i].value.trim();
         cells[2].textContent = _output[i].trim();
+        if(hasHelp) {
+          cells[3].textContent = _tests[i].option;
+          cells[3].style.display = 'table-cell';
+        } else {
+          cells[3].style.display = 'none';
+        }
       }
       if(_tests[i].value.trim() !== _output[i].trim()) {
         nbFailed += 1;

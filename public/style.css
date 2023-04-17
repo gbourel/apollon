@@ -638,6 +638,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   display: table;
 }
 
+.table-cell {
+  display: table-cell;
+}
+
 .contents {
   display: contents;
 }
