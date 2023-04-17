@@ -435,6 +435,9 @@ function onCompletion(mod) {
   let hasHelp = false;
   _tests.forEach(t => {
     if (t && t.option && t.option !== 'hide') { hasHelp = true; }
+    if (t && t.live && t.fn === 'call' && Sk.callCount[t.global] > t.value) {
+      t.passed = true;
+    }
   });
   table.querySelector('thead td.aide').style.display = hasHelp ? 'table-cell' : 'none';
   if(_tests.length > 0 && _tests.length === _output.length) {
@@ -592,6 +595,14 @@ async function runit() {
       }
     }
   };
+  let calls = {};
+  for (let lt of _tests) {
+    // TODO call type
+    if(lt.live && lt.fn === 'call') {
+      calls[lt.global] = 0
+    }
+  }
+  if (Object.keys(calls).length > 0) { Sk.callCount = calls; }
   Sk.configure({
     output: outf,
     read: builtinRead,

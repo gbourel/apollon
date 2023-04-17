@@ -7,6 +7,10 @@ let $builtinmodule = function (name) {
         if (Sk.abstr.typeName(xbool) !== "bool" || Sk.abstr.typeName(ybool) !== "bool") {
             throw new Sk.builtin.TypeError("Wrong arguments");
         }
+        // FIXME call cnt ?
+        if (Sk.callCount && Sk.callCount['pygame.transform.flip'] !== undefined) {
+            Sk.callCount['pygame.transform.flip']++;
+        }
         let t = new Sk.builtin.tuple([surf.width, surf.height]);
         let ret = Sk.misceval.callsim(PygameLib.SurfaceType, t);
         ret.context2d.save();
