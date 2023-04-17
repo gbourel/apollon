@@ -67,6 +67,9 @@ header {
 
 /* Menu */
 #mainmenu {
+  width: 90%;
+  left: 5%;
+  margin-bottom: 4rem;
   transition: transform .3s ease-in-out;
 }
 .c-card {

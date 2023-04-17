@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.8.4';
+const VERSION = 'v0.9.0';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
@@ -68,6 +68,7 @@ function displayMenu() {
   instruction.innerHTML = '';
   progress.classList.add('hidden');
   main.classList.add('hidden');
+  menu.style.display = 'block';
   menu.style.transform = 'translate(0, 0)';
 }
 
@@ -234,6 +235,7 @@ function displayExercise() {
   const pgcanvas = document.getElementById('pygamecanvas');
   const output = document.getElementById('output');
   menu.style.transform = 'translate(0, 100vh)';
+  setTimeout(() => { menu.style.display = 'none' }, 300);
   main.classList.remove('hidden');
   help.classList.remove('hidden');
   pgcanvas.classList.add('hidden');
@@ -761,9 +763,10 @@ async function init(){
   }
 
   // Load journeys
-  let jids = ['b3579a4c-36ea-446b-9218-e38b1ab97595', // initiation
+  let jids = ['b3579a4c-36ea-446b-9218-e38b1ab97595', // Initiation
               '81237620-757d-4151-b3a7-efbbeea6ad48', // 1ere
-              '1f9e97a1-29cf-4abb-a38d-5758373adce2' // Tale
+              '1f9e97a1-29cf-4abb-a38d-5758373adce2', // Tale
+              'b1ae00cc-9056-45ec-bd20-edab5ea8b166'  // Jeu 2D "pirates"
              ]
   for (let jid of jids) {
     _journeys.push(await fetchJourney(jid));
@@ -792,6 +795,7 @@ async function init(){
   document.getElementById('level-1').addEventListener('click', () => loadExercises(1, true));
   document.getElementById('level-2').addEventListener('click', () => loadExercises(2, true));
   document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));
+  document.getElementById('game2d').addEventListener('click', () => loadExercises(4, true));
   document.getElementById('profileMenuBtn').addEventListener('click', toggleMenu);
   document.getElementById('help').addEventListener('click', showHelp);
   document.getElementById('help-panel').addEventListener('click', hideHelp);
