@@ -37,6 +37,16 @@ let _user = null;
 
 const imgCache = {};
 
+// Resize src textarea when parent div is resized
+new ResizeObserver((entries) => {
+  for (const entry of entries) {
+    let editor = document.querySelector('#pythonsrc > .CodeMirror');
+    if (editor) {
+      editor.style.height = entry.contentRect.height + 'px';
+    }
+  }
+}).observe(document.getElementById('pythonsrc'));
+
 // Callback on exercise achievement
 function displaySuccess() {
   const successOverlay = document.getElementById('overlay');
