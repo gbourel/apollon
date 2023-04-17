@@ -1295,6 +1295,7 @@ function update(self) {
     self.main_canvas.width = self.offscreen_canvas.width;
     self.main_canvas.height = self.offscreen_canvas.height;
     self.main_context.drawImage(self.offscreen_canvas, 0, 0);
+    if (Sk.updateListener) { Sk.updateListener(); }
 }
 
 update.co_name = new Sk.builtin.str('update');

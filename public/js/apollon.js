@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.9.2';
+const VERSION = 'v0.9.3';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
@@ -66,11 +66,26 @@ function loadTestsCSV(csv) {
   for (let line of lines) {
     let val = line.split(';');
     if (val.length > 1) {
-      _tests.push({
-        'python': val[0],
-        'value': val[1],
-        'option': val[2]
-      });
+      // TODO oop for tests
+      if(val[0].startsWith('live:')) {
+        let elts = val[0].substring(5).trim().split(/\s+/)
+        _tests.push({
+          'live': true,
+          'python': `${val[0].substring(5)} ${val[1]}`,
+          'global': elts[0],
+          'fn': elts[1],
+          'value': val[1],
+          'option': val[2],
+          'passed': false
+        });
+      } else {
+        _tests.push({
+          'live': true,
+          'python': val[0],
+          'value': val[1],
+          'option': val[2]
+        });
+      }
     }
   }
 }
@@ -126,11 +141,6 @@ function displayExercisesNav() {
   const MARKER_PY = 24;
   const MARKER_W = 42;
 
-  // FIXME hack to hide nav for level 4 only
-  if (_journey && _journey.id === 'b1ae00cc-9056-45ec-bd20-edab5ea8b166') {
-    return;
-  }
-
   let elt = document.getElementById('progress');
   let sp = Snap('#progress');
   sp.clear();
@@ -172,6 +182,11 @@ function displayExercisesNav() {
     });
     markers.push(group);
     main.add(group)
+
+    // FIXME hack to hide nav for 2d game journey only
+    if (!done && _journey && _journey.id === 'b1ae00cc-9056-45ec-bd20-edab5ea8b166') {
+      return;
+    }
   }
   let mp = sp.circle(MARKER_PX-4, MARKER_PX, MARKER_RADIUS);
     mp.attr({
@@ -439,11 +454,12 @@ function onCompletion(mod) {
           cells[3].style.display = 'none';
         }
       }
-      if(_tests[i].value.trim() !== _output[i].trim()) {
+      if((_tests[i].live && _tests[i].passed) ||
+         (!_tests[i].live && _tests[i].value.trim() === _output[i].trim())) {
+        line && line.querySelector('tr').classList.add('ok');
+      } else {
         nbFailed += 1;
         line && line.querySelector('tr').classList.add('ko');
-      } else {
-        line && line.querySelector('tr').classList.add('ok');
       }
       if(line) {
         let tbody = table.querySelector('tbody');
@@ -559,10 +575,23 @@ async function runit() {
   if (prog.indexOf('pygame') > 0) {
     await loadPygame(prog);
   }
+  // reinit live tests
+  for (let t of _tests) { if (t.live) { t.passed = false; } }
 
   Sk.pre = 'output';
   Sk.imgCache = imgCache;
   Sk.searchImportUseFullPath = true;
+  Sk.updateListener = () => {
+    for (let lt of _tests) {
+      if (!lt.live || lt.passed) { continue; }
+      // TODO switch, oop ?
+      if (lt.fn === '>') {
+        if(Sk.globals[lt.global] > lt.value) { lt.passed = true; }
+      } else if (lt.fn === '<') {
+        if(Sk.globals[lt.global] < lt.value) { lt.passed = true; }
+      }
+    }
+  };
   Sk.configure({
     output: outf,
     read: builtinRead,
