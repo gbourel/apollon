@@ -459,6 +459,7 @@ function outf(text) {
 
 function preloadImg(url) {
   return new Promise(async (resolve, reject) => {
+    debug('Fetch image', url);
     const res = await fetch(url);
     const reader = new FileReader();
     const blob = await res.blob();
@@ -689,8 +690,8 @@ function updateAchievements() {
 }
 
 Sk.main_canvas = document.getElementById("pygamecanvas");
-Sk.imgPath = 'test/';
-
+Sk.imgPath = 'https://filedn.nsix.fr/NSI/assets/';
+Sk.audioPath = 'https://filedn.nsix.fr/NSI/assets/';
 const skExternalLibs = {
   './data.js': './lib/skulpt/externals/data.js',
   './snap.js': './lib/skulpt/externals/snap.js',
