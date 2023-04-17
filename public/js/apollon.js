@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.9.1';
+const VERSION = 'v0.9.2';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
@@ -25,6 +25,7 @@ if(dev) {
 }
 
 let _journeys = [];    // All journeys
+let _journey = null;   // Current journey
 let _exercises = [];   // All exercises for current journey
 let _exerciseIdx = 0;  // Current exercise index
 let _exercise = null;  // Current exercise
@@ -42,6 +43,13 @@ function displaySuccess() {
   successOverlay.classList.remove('hidden');
 }
 
+/**
+ * Load CSV tests from question format is :
+ * python command (used in print);expected result;option
+ * option may either be :
+ *  - hide : hide the test content (in order to avoid cheating)
+ *  - any sentence : displayed as help
+ */
 function loadTestsCSV(csv) {
   _tests = [];
   let lines = csv.split('\n');
@@ -57,6 +65,7 @@ function loadTestsCSV(csv) {
   }
 }
 
+/// Display main menu (journey selection)
 function displayMenu() {
   const menu = document.getElementById('mainmenu');
   const progress = document.getElementById('progress');
@@ -65,6 +74,8 @@ function displayMenu() {
   const help = document.getElementById('help');
   help.classList.add('hidden');
   hideHelp();
+  _journey = null;
+  _exercises = [];
   instruction.innerHTML = '';
   progress.classList.add('hidden');
   main.classList.add('hidden');
@@ -95,6 +106,8 @@ function updateListTx() {
   }
 }
 
+
+/// Display exercices list for navigation on top.
 function displayExercisesNav() {
   const enabled = ['#ffeebc', '#366f9f', '#234968'];
   const disabled = ['#aaaaaa', '#333333', '#777777'];
@@ -102,6 +115,12 @@ function displayExercisesNav() {
   const MARKER_PX = 24;
   const MARKER_PY = 24;
   const MARKER_W = 42;
+
+  // FIXME hack to hide nav for level 4 only
+  if (_journey && _journey.id === 'b1ae00cc-9056-45ec-bd20-edab5ea8b166') {
+    return;
+  }
+
   let elt = document.getElementById('progress');
   let sp = Snap('#progress');
   sp.clear();
@@ -329,8 +348,8 @@ function loadExercises(level, pushHistory){
   if(!_user) { return loginRequired(); }
   showLoading();
 
-  let journey = _journeys[level-1];
-  _exercises = journey.challenges;
+  _journey = _journeys[level-1];
+  _exercises = _journey.challenges;
   _exerciseIdx = -1;
   for (let i in _exercises) {
     if(_exerciseIdx < 0) {
