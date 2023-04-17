@@ -435,7 +435,7 @@ function onCompletion(mod) {
   let hasHelp = false;
   _tests.forEach(t => {
     if (t && t.option && t.option !== 'hide') { hasHelp = true; }
-    if (t && t.live && t.fn === 'call' && Sk.callCount[t.global] > t.value) {
+    if (t && t.live && t.fn === 'call' && Sk.callCount[t.global] >= t.value) {
       t.passed = true;
     }
   });
