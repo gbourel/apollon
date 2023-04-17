@@ -80,7 +80,7 @@ function loadTestsCSV(csv) {
         });
       } else {
         _tests.push({
-          'live': true,
+          'live': false,
           'python': val[0],
           'value': val[1],
           'option': val[2]
@@ -446,7 +446,7 @@ function onCompletion(mod) {
         let cells = line.querySelectorAll('td');
         cells[0].textContent = _tests[i].python;
         cells[1].textContent = _tests[i].value.trim();
-        cells[2].textContent = _output[i].trim();
+        cells[2].textContent = _tests[i].live ? _tests[i].passed : _output[i].trim();
         if(hasHelp) {
           cells[3].textContent = _tests[i].option;
           cells[3].style.display = 'table-cell';
@@ -600,7 +600,8 @@ async function runit() {
   prog += "\nprint('### END_OF_USER_INPUT ###')";
   for (let t of _tests) {
     let instruction = t.python.trim();
-    if(!instruction.startsWith('print')) {
+    if(t.live) { instruction = 'print("-")'; }
+    else if(!instruction.startsWith('print')) {
       instruction = `print(${instruction})`;
     }
     prog += "\n" + instruction;
