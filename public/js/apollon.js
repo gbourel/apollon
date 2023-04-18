@@ -642,6 +642,9 @@ async function runit() {
     //   });
     // }
     let msg = err.toString();
+    if(PygameLib) {   // ensure pygame has stopped
+      PygameLib.running = false;
+    }
     if(!_over) {
       document.getElementById('output').innerHTML += `<div class="error">${msg}</div>`;
     } else {
