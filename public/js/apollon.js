@@ -592,6 +592,8 @@ async function runit() {
         if(Sk.globals[lt.global] > lt.value) { lt.passed = true; }
       } else if (lt.fn === '<') {
         if(Sk.globals[lt.global] < lt.value) { lt.passed = true; }
+      } else if (lt.fn === '==') {
+        if(Sk.globals[lt.global] == lt.value) { lt.passed = true; }
       }
     }
   };
