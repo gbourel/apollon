@@ -18,6 +18,10 @@ function mixer_Sound(gbl, loc) {
     loc.__init__.co_varnames = ['self', 'filename'];
     loc.__init__.$defaults = [Sk.ffi.remapToPy(0)];
     loc.play = new Sk.builtin.func(function (self, loops, maxtime, fade_ms) {
+        // FIXME call cnt ?
+        if (Sk.callCount && Sk.callCount['pygame.mixer.Sound.play'] !== undefined) {
+            Sk.callCount['pygame.mixer.Sound.play']++;
+        }
         if (self.audioElt) {
             self.audioElt.play();
         }
@@ -34,7 +38,13 @@ function mixer_Sound(gbl, loc) {
     loc.fadeout = new Sk.builtin.func(function (self, time) {
         return Sk.builtin.none.none$;
     }, gbl);
-
+    loc.get_length = new Sk.builtin.func(function (self) {
+        console.info('audio', self.audioElt)
+        const len = self.audioElt ? self.audioElt.duration : .0;
+        return new Sk.builtin.float_(len);
+    }, gbl);
+    loc.get_length.co_name = new Sk.builtin.str('get_length');
+    loc.get_length.co_varnames = ['self'];
     loc.set_volume = new Sk.builtin.func(function (self, volume) {
         if (self.audioElt && volume) {
             self.audioElt.volume = volume.v;
@@ -46,7 +56,7 @@ function mixer_Sound(gbl, loc) {
     loc.set_volume.$defaults = [new Sk.builtin.float_(1.0)];
 
     loc.get_volume = new Sk.builtin.func(function (self) {
-        return new Sk.builtin.float_(1.0);
+        return new Sk.builtin.float_(self.audioElt.volume);
     }, gbl);
 }
 mixer_Sound.co_name = new Sk.builtin.str('Sound');
