@@ -429,6 +429,7 @@ function registerSuccess(exerciseId, answer){
 
 // On Python script completion
 function onCompletion(mod) {
+  if (!_exercise) { return; }
   let nbFailed = _tests.length;
   let table = document.importNode(document.querySelector('#results-table').content, true);
   let lineTemplate = document.querySelector('#result-line');
@@ -644,9 +645,9 @@ async function runit() {
     //   });
     // }
     let msg = err.toString();
-    if(PygameLib) {   // ensure pygame has stopped
-      PygameLib.running = false;
-    }
+    // if(PygameLib) {   // ensure pygame has stopped
+    //   PygameLib.running = false;
+    // }
     if(!_over) {
       document.getElementById('output').innerHTML += `<div class="error">${msg}</div>`;
     } else {
