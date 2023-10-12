@@ -1059,6 +1059,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow) !important;
 }
 
+.transition {
+  transition-property: color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
 code {
   color: #D4F3D4;
   font-weight: bold;
@@ -1157,6 +1165,15 @@ header {
     font-size: 1.3rem;
     line-height: 1.8rem;
   }
+}
+
+.disabled {
+  filter: grayscale(100%) blur(1px);
+}
+
+.disabled .c-card:hover {
+  cursor: default;
+  transform: scale(1);
 }
 
 /* Src / Output */
@@ -1396,24 +1413,28 @@ span.katex {
   align-items: center;
   top: 50%;
   left: 50%;
-  width: 320px;
-  height: 260px;
-  margin-left: -160px;
+  width: 420px;
+  height: 300px;
+  margin-left: -210px;
   margin-top: -140px;
-  padding: 8rem 2rem 0rem 2rem;
+  padding: 160px 2rem 0rem 2rem;
   text-align: center;
   border-radius: 1rem;
   background: 50% 10% / 20% no-repeat url("./img/connexion.png"),
               linear-gradient(-45deg, #475569, #343E4C, #476669, #3a380f);
   box-shadow: 0 4px 6px -1px #00000055, 0 2px 4px -2px #00000055;
   border: 2px solid #35404e;
-  transform: translate(0, -70vh);
+  transform: translate(0, -80vh);
   transition: transform .3s ease-in-out;
   z-index: 20;
 }
 
 #login-popup span {
   color: #ffeebc;
+}
+
+#login-popup .buttons {
+  display: flex;
 }
 
 .hover\:shadow-2xl:hover {

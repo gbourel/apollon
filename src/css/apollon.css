@@ -93,6 +93,13 @@ header {
     line-height: 1.8rem;
   }
 }
+.disabled {
+  filter: grayscale(100%) blur(1px);
+}
+.disabled .c-card:hover {
+  cursor: default;
+  transform: scale(1);
+}
 
 /* Src / Output */
 #output {
@@ -286,21 +293,24 @@ span.katex {
   align-items: center;
   top: 50%;
   left: 50%;
-  width: 320px;
-  height: 260px;
-  margin-left: -160px;
+  width: 420px;
+  height: 300px;
+  margin-left: -210px;
   margin-top: -140px;
-  padding: 8rem 2rem 0rem 2rem;
+  padding: 160px 2rem 0rem 2rem;
   text-align: center;
   border-radius: 1rem;
   background: 50% 10% / 20% no-repeat url("./img/connexion.png"),
               linear-gradient(-45deg, #475569, #343E4C, #476669, #3a380f);
   box-shadow: 0 4px 6px -1px #00000055, 0 2px 4px -2px #00000055;
   border: 2px solid #35404e;
-  transform: translate(0, -70vh);
+  transform: translate(0, -80vh);
   transition: transform .3s ease-in-out;
   z-index: 20;
 }
 #login-popup span {
   color: #ffeebc;
+}
+#login-popup .buttons {
+  display: flex;
 }

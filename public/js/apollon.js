@@ -1,27 +1,28 @@
 (function (){
 
-const VERSION = 'v0.9.3';
+const VERSION = 'v0.10.1';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
-const dev = host.startsWith('localhost') || host.indexOf('ileauxsciences.test') >= 0;
+const dev = host.startsWith('localhost') || host.indexOf('nsix.test') >= 0;
 let debug = () => {};
 if(dev || location.href.match('#debug')) {
   debug = console.info;
 }
 
 let _pythonEditor = null; // Codemirror editor
-let _output = [];     // Current script stdout
-let _nsix = false;    // If embedded in a nsix challenge
+let _output = [];         // Current script stdout
+let _skipLogin = false;   // Don't ask for login anymore
+let _nsix = false;        // If embedded in a nsix challenge
 
 
 let NSIX_LOGIN_URL = 'https://app.nsix.fr/connexion';
-let LCMS_URL = 'https://webamc.nsix.fr';
+let LCMS_URL = 'https://lcms.nsix.fr';
 let COOKIE_DOMAIN = '.nsix.fr';
 if(dev) {
-  NSIX_LOGIN_URL = 'http://ileauxsciences.test:4200/connexion'
-  LCMS_URL = 'http://dev.ileauxsciences.test:9976';
-  COOKIE_DOMAIN = '.ileauxsciences.test';
+  NSIX_LOGIN_URL = 'http://nsix.test:5173/login'
+  LCMS_URL = 'http://nsix.test:5000/api';
+  COOKIE_DOMAIN = '.nsix.test';
 }
 
 let _journeys = [];    // All journeys
@@ -150,7 +151,8 @@ function displayExercisesNav() {
   markers = [];
   for (let i = 0; i < _exercises.length; i++) {
     let x = MARKER_PX + MARKER_W*i;
-    let done  = _user.results.find(r => r.exerciseId === _exercises[i].id && r.done === true)
+    if (!_user.results) { break; }
+    let done  = _user.results.find(r => r.activity_id == _exercises[i].id && r.success)
     let colors = (done ? enabled : disabled);
     let marker = sp.circle(x, MARKER_PY, MARKER_RADIUS);
     marker.attr({
@@ -271,7 +273,6 @@ function initPythonEditor() {
  * Affiche l'exercice en cours (_exercises[_exerciseIdx]).
  */
 function displayExercise() {
-  // const title = document.getElementById('title');
   const instruction = document.getElementById('instruction');
   const main = document.getElementById('main');
   const menu = document.getElementById('mainmenu');
@@ -326,13 +327,12 @@ function displayExercise() {
     } else {
       helpBtn.classList.add('hidden');
     }
-    let result = _user.results?.find(r => r.exerciseId === _exercise.id);
-    // console.info(result);
+    let result = _user?.results?.find(r => r.activity_id == _exercise.id);
     if(lastprog && lastprog.length) {
       prog = lastprog;
     } else {
       if (result) {
-        prog = result.content;
+        prog = result.response;
       }
     }
     _pythonEditor.setValue(prog);
@@ -354,8 +354,8 @@ function nextExercise() {
   displayExercise();
 }
 
-// Display login required popup
-function loginRequired() {
+// Display missing login warning popup
+function loginWarning() {
   let lr = document.getElementById('login-required');
   lr.style.width = '100%';
   lr.onclick = hideLoginPopup;
@@ -370,19 +370,27 @@ function hideLoginPopup() {
 // Load exercises from remote LCMS
 function loadExercises(level, pushHistory){
   if(!level) { return console.warn('Missing level'); }
-  if(!_user) { return loginRequired(); }
+  if(!_user && !_skipLogin) {
+    return loginWarning();
+  }
   showLoading();
 
   _journey = _journeys[level-1];
-  _exercises = _journey.challenges;
+  _exercises = _journey.activities;
   _exerciseIdx = -1;
-  for (let i in _exercises) {
-    if(_exerciseIdx < 0) {
-      let r = _user.results.find(r => r.exerciseId === _exercises[i].id);
-      if(!r || r.done === false) {
-        _exerciseIdx = parseInt(i);
+  if (_user) {
+    for (let i in _exercises) {
+      if (_exerciseIdx < 0) {
+        if (_user.results) {
+          let r = _user.results.find(r => r.activity_id == _exercises[i].id);
+          if(!r || !r.success) {
+            _exerciseIdx = parseInt(i);
+          }
+        }
       }
     }
+  } else {
+    _exerciseIdx = 0;
   }
   hideLoading();
   if(pushHistory) {
@@ -401,15 +409,17 @@ function resetProg(){
 }
 
 // Send succes to lcms api
-function registerSuccess(exerciseId, answer){
+function registerSuccess(activityId, answer){
   const token = getAuthToken();
   if(token) {
     const body = {
-      'exerciseId': exerciseId,
-      'answer': answer,
-      'content': _pythonEditor.getValue()
+      'activity_id': activityId,
+      'duration': 0,
+      'success': true,
+      'response': _pythonEditor.getValue()
     };
-    const req = new Request(LCMS_URL + '/students/success',  {
+    // FIXME start_time end_time duration attempts
+    const req = new Request(LCMS_URL + '/activity/' + activityId,  {
       'method': 'POST',
       'headers': {
         'Authorization': 'Bearer ' + token,
@@ -419,7 +429,7 @@ function registerSuccess(exerciseId, answer){
     });
     fetch(req).then(res => { return res.json(); })
     .then(data => {
-      console.info(JSON.stringify(data));
+      debug('Userinfo:', JSON.stringify(data));
       _user.results.push(data);
       updateAchievements();
     });
@@ -645,9 +655,9 @@ async function runit() {
     //   });
     // }
     let msg = err.toString();
-    // if(PygameLib) {   // ensure pygame has stopped
-    //   PygameLib.running = false;
-    // }
+    if(typeof PygameLib !== "undefined") {   // ensure pygame has stopped
+      PygameLib.running = false;
+    }
     if(!_over) {
       document.getElementById('output').innerHTML += `<div class="error">${msg}</div>`;
     } else {
@@ -664,18 +674,21 @@ function login() {
   const current = location.href;
   location.href = `${NSIX_LOGIN_URL}?dest=${current}`;
 }
+function registerSkipLogin() {
+  _skipLogin = true;
+}
 
 function getAuthToken(){
   let token = null;
   if(document.cookie) {
-    const name = 'ember_simple_auth-session='
+    const name = 'neossot='
     let cookies = decodeURIComponent(document.cookie).split(';');
     for (let c of cookies) {
-      let idx = c.indexOf(name);
-      if(idx > -1) {
-        let value = c.substring(name.length + idx);
-        let json = JSON.parse(value);
-        token = json.authenticated.access_token;
+      if(token == null) {
+        let idx = c.indexOf(name);
+        if(idx > -1) {
+          token = c.substring(name.length + idx);
+        }
       }
     }
   }
@@ -685,7 +698,7 @@ function getAuthToken(){
 function loadUser(cb) {
   let token = getAuthToken();
   if(token) {
-    const meUrl = LCMS_URL + '/students/profile';
+    const meUrl = LCMS_URL + '/auth/userinfo';
     const req = new Request(meUrl);
     fetch(req, {
       'headers': {
@@ -700,9 +713,7 @@ function loadUser(cb) {
       }
       return json;
     }).then(data => {
-      // console.info(JSON.stringify(data, '', ' '));
-      // console.info(data.student);
-      cb(data.student);
+      cb(data);
     }).catch(err => {
       console.warn('Unable to fetch user', err);
       debug(cb);
@@ -713,10 +724,33 @@ function loadUser(cb) {
   }
 }
 
+async function loadResults() {
+  let token = getAuthToken();
+  if(token) {
+    let parcours = [];
+    for (let j of _journeys) {
+      parcours.push(`"${j.code}"`);
+    }
+    const res = await fetch(LCMS_URL + `/resultats/?parcours=[${parcours.join(',')}]`, {
+      'headers': {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+    if (res && res.status === 200) {
+      const results = await res.json()
+      debug('Results found', results);
+      return results;
+    }
+    console.error('Unable to fetch results', res);
+    return null;
+  }
+  return null;
+}
+
 function getProgKey(){
   let key = 'prog'
   if(_user) {
-    key += '_' + _user.studentId;
+    key += '_' + _user.externalId;
   }
   if(_exercise) {
     key += '_' + _exercise.id;
@@ -745,7 +779,7 @@ function toggleMenu(evt){
 }
 
 function logout() {
-  const cookies = ['ember_simple_auth-session', 'ember_simple_auth-session-expiration_time'];
+  const cookies = ['neossot'];
   for (let cookie of cookies) {
     document.cookie=`${cookie}=; domain=${COOKIE_DOMAIN}; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
   }
@@ -754,14 +788,16 @@ function logout() {
 
 function updateAchievements() {
   if(!_user || !_journeys) { return; }
-  for (let i = 1; i < 5 ; i++){  // FIXME dynamic level count
+  for (let i = 1; i <= _journeys.length ; i++){
     let elt = document.querySelector(`#level-${i} .percent`);
-    let total =  _journeys[i-1].challenges.length;
+    let total =  _journeys[i-1].activities.length;
     let done = 0;
-    for (let ch of _journeys[i-1].challenges){
-      let result = _user.results.find(r => r.exerciseId === ch.id);
-      if(result && result.done) {
-        done++;
+    for (let ch of _journeys[i-1].activities){
+      if (_user.results) {
+        let result = _user.results.find(r => r.activity_id == ch.id);
+        if(result && result.success) {
+          done++;
+        }
       }
     }
     let percent = 100.0 * done / total;
@@ -820,7 +856,8 @@ function builtinRead(file) {
 
 function fetchJourney(jid) {
   return new Promise((resolve, reject) => {
-    const req = new Request(`${LCMS_URL}/lcms/journey/${jid}`);
+    // const req = new Request(`${LCMS_URL}/lcms/journey/${jid}`);
+    const req = new Request(`${jid}`);
     fetch(req).then(res => { return res.json(); })
     .then(journey => {
       resolve(journey);
@@ -846,15 +883,15 @@ async function init(){
       _exerciseIdx = index;
     }
     let challenge = purl.searchParams.get('challenge');
-    console.info('Challenge', challenge)
   }
 
   // Load journeys
-  let jids = ['b3579a4c-36ea-446b-9218-e38b1ab97595', // Initiation
-              '81237620-757d-4151-b3a7-efbbeea6ad48', // 1ere
-              '1f9e97a1-29cf-4abb-a38d-5758373adce2', // Tale
-              'b1ae00cc-9056-45ec-bd20-edab5ea8b166'  // Jeu 2D "pirates"
-             ]
+  let jids = [
+    'data/01-init.json', // Initiation
+    'data/02-premiere.json', // 1ere
+    // 'data/03-terminales.json', // Tale
+    // 'data/04-pirate.json'  // Jeu 2D "pirates"
+  ];
   for (let jid of jids) {
     _journeys.push(await fetchJourney(jid));
   }
@@ -879,10 +916,11 @@ async function init(){
   document.getElementById('resetbtn').addEventListener('click', resetProg);
   document.getElementById('login').addEventListener('click', login);
   document.getElementById('login2').addEventListener('click', login);
+  document.getElementById('skip-login-btn').addEventListener('click', registerSkipLogin);
   document.getElementById('level-1').addEventListener('click', () => loadExercises(1, true));
   document.getElementById('level-2').addEventListener('click', () => loadExercises(2, true));
-  document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));
-  document.getElementById('level-4').addEventListener('click', () => loadExercises(4, true));
+  // document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));
+  // document.getElementById('level-4').addEventListener('click', () => loadExercises(4, true));
   document.getElementById('profileMenuBtn').addEventListener('click', toggleMenu);
   document.getElementById('help').addEventListener('click', showHelp);
   document.getElementById('help-panel').addEventListener('click', hideHelp);
@@ -911,6 +949,7 @@ async function init(){
       _user = user;
       document.getElementById('username').innerHTML = user.firstName || 'Moi';
       document.getElementById('profile-menu').classList.remove('hidden');
+      _user.results = await loadResults();
       updateAchievements();
     } else {
       document.getElementById('login').classList.remove('hidden');
