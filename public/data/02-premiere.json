@@ -6,7 +6,8 @@
   "enabled": true,
   "activities": [
     {
-      "id": "c02e0242-c22e-4f90-a1ae-776e3495eb3e",
+      "id": "17",
+      "uid": "c02e0242-c22e-4f90-a1ae-776e3495eb3e",
       "instruction": "Un tableau en Python s'écrit avec des crochets ainsi `[ ]` est un tableau vide.\n<br><br>\nCompléter le code ci-dessous pour ajouter au tableau `tab` les nombres allant de 0 à 9",
       "proposals": "tab = [ ]\nfor i in range(10):\n    print(i)\nprint(tab)",
       "type": "QROC",
@@ -32,7 +33,8 @@
       "helpCnt": 0
     },
     {
-      "id": "0be8e311-b29f-442f-a7ce-2236e0c5eaef",
+      "id": "18",
+      "uid": "0be8e311-b29f-442f-a7ce-2236e0c5eaef",
       "instruction": "Le programme Python ci-dessous utilise un module `data` pour obtenir une variable de type `dictionnaire` qui est nommée `p`. Enregistrer la valeur correspondant à la clef `Metier` dans la variable `travail`.",
       "proposals": "import data\np = data.personne()\ntravail = None",
       "type": "QROC",
@@ -58,7 +60,8 @@
       "helpCnt": 0
     },
     {
-      "id": "2a235c13-4455-4d68-8428-419587ec5646",
+      "id": "19",
+      "uid": "2a235c13-4455-4d68-8428-419587ec5646",
       "instruction": "Modifier le programme Python ci-dessous pour enregistrer le résultat de $a^5 + 79$ dans la variable `b`.\n<br><br>\n_L'affichage doit être fait à l'aide de la fonction `print`._",
       "proposals": "a = 7\nb = 0\nprint(b)",
       "type": "QROC",
@@ -84,7 +87,8 @@
       "helpCnt": 0
     },
     {
-      "id": "d5843d87-da1a-4de4-aa25-c09c0b375082",
+      "id": "20",
+      "uid": "d5843d87-da1a-4de4-aa25-c09c0b375082",
       "instruction": "Écrire la fonction `maxliste`, prenant en paramètre un tableau non vide de nombres `tab` (type\n`list`) et renvoyant le plus grand élément de ce tableau.\n\nExemples :\n\n```python\n>>> maxliste([98, 12, 104, 23, 131, 9])\n131\n>>> maxliste([-27, 24, -3, 15])\n24\n```",
       "proposals": "",
       "type": "QROC",
@@ -110,7 +114,8 @@
       "helpCnt": 0
     },
     {
-      "id": "8a39c45c-2cab-46b2-82a4-85ee5ccc7ec5",
+      "id": "21",
+      "uid": "8a39c45c-2cab-46b2-82a4-85ee5ccc7ec5",
       "instruction": "Modifier le programme Python ci-dessous pour enregistrer la somme des valeurs du tableau `tab` dans la variable `s`.\n<br><br>\n_L'affichage doit être fait à l'aide de la fonction `print`._",
       "proposals": "import data\ntab = data.tableau()\ns = 0",
       "type": "QROC",
