@@ -16,7 +16,7 @@ let _skipLogin = false;   // Don't ask for login anymore
 let _nsix = false;        // If embedded in a nsix challenge
 
 
-let NSIX_LOGIN_URL = 'https://app.nsix.fr/connexion';
+let NSIX_LOGIN_URL = 'https://www.nsix.fr/login';
 let LCMS_URL = 'https://lcms.nsix.fr';
 let COOKIE_DOMAIN = '.nsix.fr';
 if(dev) {
