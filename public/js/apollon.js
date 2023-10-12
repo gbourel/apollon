@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.10.3';
+const VERSION = 'v0.10.4';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
@@ -916,7 +916,7 @@ async function init(){
   document.getElementById('resetbtn').addEventListener('click', resetProg);
   document.getElementById('login').addEventListener('click', login);
   document.getElementById('login2').addEventListener('click', login);
-  document.getElementById('skip-login-btn').addEventListener('click', registerSkipLogin);
+  // document.getElementById('skip-login-btn').addEventListener('click', registerSkipLogin);
   document.getElementById('level-1').addEventListener('click', () => loadExercises(1, true));
   document.getElementById('level-2').addEventListener('click', () => loadExercises(2, true));
   // document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));
