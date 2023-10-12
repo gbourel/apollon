@@ -1,6 +1,6 @@
 (function (){
 
-const VERSION = 'v0.10.2';
+const VERSION = 'v0.10.3';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
@@ -17,7 +17,7 @@ let _nsix = false;        // If embedded in a nsix challenge
 
 
 let NSIX_LOGIN_URL = 'https://www.nsix.fr/login';
-let LCMS_URL = 'https://lcms.nsix.fr/api';
+let LCMS_URL = 'https://lcms2.nsix.fr/api';
 let COOKIE_DOMAIN = '.nsix.fr';
 if(dev) {
   NSIX_LOGIN_URL = 'http://nsix.test:5173/login'
