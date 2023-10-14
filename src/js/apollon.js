@@ -1,6 +1,4 @@
-(function (){
-
-const VERSION = 'v0.10.4';
+const VERSION = 'v0.10.5';
 document.getElementById('version').textContent = VERSION;
 
 const host = window.location.host;
@@ -9,6 +7,8 @@ let debug = () => {};
 if(dev || location.href.match('#debug')) {
   debug = console.info;
 }
+
+import { options } from './options.js';
 
 let _pythonEditor = null; // Codemirror editor
 let _output = [];         // Current script stdout
@@ -378,7 +378,9 @@ function loadExercises(level, pushHistory){
   _journey = _journeys[level-1];
   _exercises = _journey.activities;
   _exerciseIdx = -1;
-  if (_user) {
+  if (options.exidx >= 0) {
+    _exerciseIdx = options.exidx;
+  } else if (_user) {
     for (let i in _exercises) {
       if (_exerciseIdx < 0) {
         if (_user.results) {
@@ -394,7 +396,7 @@ function loadExercises(level, pushHistory){
   }
   hideLoading();
   if(pushHistory) {
-    history.pushState({'level': level}, '', `/#parcours${level}`);
+    history.pushState({'level': level}, '', `/?parcours=${level}`);
   }
   displayExercise();
 }
@@ -410,6 +412,9 @@ function resetProg(){
 
 // Send succes to lcms api
 function registerSuccess(activityId, answer){
+  if (options.preview) {
+    return console.info('Preview mode: no success registration');
+  }
   const token = getAuthToken();
   if(token) {
     const body = {
@@ -856,7 +861,6 @@ function builtinRead(file) {
 
 function fetchJourney(jid) {
   return new Promise((resolve, reject) => {
-    // const req = new Request(`${LCMS_URL}/lcms/journey/${jid}`);
     const req = new Request(`${jid}`);
     fetch(req).then(res => { return res.json(); })
     .then(journey => {
@@ -957,15 +961,10 @@ async function init(){
     }
 
     let loaded = false;
-    if(location.hash) {
-      let levelpath = location.hash.match('#parcours(\\d)');
-      if(levelpath) {
-        let lvl = parseInt(levelpath[1]);
-        if(lvl !== NaN) {
-          loadExercises(lvl);
-          loaded = true;
-        }
-      }
+    let lvl = options['parcours'];
+    if(lvl >= 0) {
+      loadExercises(lvl);
+      loaded = true;
     }
     if(!loaded) { displayMenu(); }
     hideLoading();
@@ -980,5 +979,3 @@ for (let e of elts) {
 }
 
 init();
-
-})();
