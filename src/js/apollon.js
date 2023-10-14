@@ -1,14 +1,14 @@
 const VERSION = 'v0.10.5';
 document.getElementById('version').textContent = VERSION;
 
+import { options } from './options.js';
+
 const host = window.location.host;
 const dev = host.startsWith('localhost') || host.indexOf('nsix.test') >= 0;
 let debug = () => {};
-if(dev || location.href.match('#debug')) {
+if(dev || options.debug) {
   debug = console.info;
 }
-
-import { options } from './options.js';
 
 let _pythonEditor = null; // Codemirror editor
 let _output = [];         // Current script stdout

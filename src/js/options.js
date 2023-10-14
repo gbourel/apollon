@@ -1,10 +1,12 @@
 
 export const options = {
+  debug: false,
   parcours: -1,
   exidx: -1,
   preview: false
 };
 const types = {
+  debug: 'bool',
   parcours: 'int',
   exidx: 'int',
   preview: 'bool'
