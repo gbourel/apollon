@@ -294,9 +294,17 @@ function displayExercise() {
     if(!_pythonEditor) {
       initPythonEditor();
     }
-    loadTestsCSV(_exercise.tests);
+    if(_exercise.tests) { // deprecated format
+      loadTestsCSV(_exercise.tests);
+    } else {
+      loadTestsCSV(_exercise.validation);
+    }
     // title.innerHTML = _exercise.title || 'Entrainement';
-    instruction.innerHTML = marked.parse(_exercise.instruction);
+    if(_exercise.instruction) { // deprecated format
+      instruction.innerHTML = marked.parse(_exercise.instruction);
+    } else {
+      instruction.innerHTML = marked.parse(_exercise.intro);
+    }
     renderMathInElement(instruction, {
       delimiters: [
           {left: '$$', right: '$$', display: true},
@@ -525,12 +533,11 @@ function onCompletion(mod) {
 // Python script stdout
 function outf(text) {
   if(text.startsWith('### END_OF_USER_INPUT ###')) {
-    return _over = true;
-  }
-  if(_over === false) {
-    document.getElementById('output').innerHTML += `<div>${text}</div>`;
+    _over = true;
+  } else if(_over === true && text.startsWith('__TESTRES__')) {
+    _output.push(text.substring(12).trim());
   } else {
-    _output.push(text.trim());
+    document.getElementById('output').innerHTML += `<div>${text}</div>`;
   }
 }
 
@@ -626,12 +633,12 @@ async function runit() {
     read: builtinRead,
     __future__: Sk.python3
   });
-  prog += "\nprint('### END_OF_USER_INPUT ###')";
+  prog += "\nprint('### END_OF_USER_INPUT ###')\n";
   for (let t of _tests) {
     let instruction = t.python.trim();
     if(t.live) { instruction = 'print("-")'; }
     else if(!instruction.startsWith('print')) {
-      instruction = `print(${instruction})`;
+      instruction = `print("__TESTRES__", ${instruction})`;
     }
     prog += "\n" + instruction;
   }

@@ -28,7 +28,7 @@
       "embedUrl": "https://python.nsix.fr",
       "focus": false,
       "python": true,
-      "tests": "print(tab[0]);0\nprint(tab[3]);3\nprint(tab[9]);9\nprint(len(tab));10",
+      "tests": "tab[0];0\ntab[3];3\ntab[9];9\nlen(tab);10",
       "amc": null,
       "helpCnt": 0
     },
@@ -82,7 +82,7 @@
       "embedUrl": "https://python.nsix.fr",
       "focus": false,
       "python": true,
-      "tests": "print(b);16886",
+      "tests": "b;16886",
       "amc": null,
       "helpCnt": 0
     },
@@ -109,7 +109,7 @@
       "embedUrl": null,
       "focus": false,
       "python": true,
-      "tests": "print(maxliste([98, 12, 104, 23, 131, 9]));131\nprint(maxliste([-27, 24, -3, 15]));24",
+      "tests": "maxliste([98, 12, 104, 23, 131, 9]);131\nmaxliste([-27, 24, -3, 15]);24",
       "amc": null,
       "helpCnt": 0
     },
@@ -136,7 +136,7 @@
       "embedUrl": "https://python.nsix.fr",
       "focus": false,
       "python": true,
-      "tests": "print(s);120426",
+      "tests": "s;120426",
       "amc": null,
       "helpCnt": 0
     }

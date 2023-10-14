@@ -217,7 +217,7 @@
       "embedUrl": "http://python.nsix.fr",
       "focus": false,
       "python": true,
-      "tests": "print(phrase);Hello world !",
+      "tests": "phrase;Hello world !",
       "amc": null,
       "helpCnt": 0
     },
@@ -271,7 +271,7 @@
       "embedUrl": "https://python.nsix.fr",
       "focus": false,
       "python": true,
-      "tests": "print(s);45\n",
+      "tests": "s;45\n",
       "amc": null,
       "helpCnt": 0
     },
