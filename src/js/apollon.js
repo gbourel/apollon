@@ -291,8 +291,8 @@ function displayExercise() {
       ],
       throwOnError : false
     });
-    if(_exercise.proposals && _exercise.proposals.length > 0) {
-      prog = _exercise.proposals;
+    if(_exercise.proposal && _exercise.proposal.length > 0) {
+      prog = _exercise.proposal;
       document.getElementById('resetbtn').classList.remove('hidden');
     } else {
       document.getElementById('resetbtn').classList.add('hidden');
@@ -379,9 +379,9 @@ function loadExercises(level, pushHistory){
 
 // Reload initial prog
 function resetProg(){
-  if(_exercise && _exercise.proposals && _exercise.proposals.length > 0) {
+  if(_exercise && _exercise.proposal && _exercise.proposal.length > 0) {
     if(_pythonEditor) {
-      _pythonEditor.setValue(_exercise.proposals);
+      _pythonEditor.setValue(_exercise.proposal);
     }
   }
 }
