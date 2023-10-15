@@ -57,11 +57,10 @@ export const lcms = {
   fetchJourneys: async () => {
     let res = [];
     let jids = [
-      'data/01-init.json', // Initiation
-      'data/02-premiere.json', // 1ere
-      `${config.lcmsUrl}/parcours/code/KIYYTB`,
-      // 'data/03-terminales.json', // Tale
-      // 'data/04-pirate.json'  // Jeu 2D "pirates"
+      `${config.lcmsUrl}/parcours/code/EXNZJN`, // Initiation
+      `${config.lcmsUrl}/parcours/code/NZGTIQ`, // 1ere
+      `${config.lcmsUrl}/parcours/code/KIYYTB`, // Tale
+      // `${config.lcmsUrl}/parcours/code/TODO`  // Jeu 2D "pirates"
     ];
     for (let jid of jids) {
       res.push(await lcms.fetchJourney(jid));
