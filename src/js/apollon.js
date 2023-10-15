@@ -1,29 +1,14 @@
 const VERSION = 'v0.10.5';
 document.getElementById('version').textContent = VERSION;
 
-import { options } from './options.js';
-
-const host = window.location.host;
-const dev = host.startsWith('localhost') || host.indexOf('nsix.test') >= 0;
-let debug = () => {};
-if(dev || options.debug) {
-  debug = console.info;
-}
+import { config } from './config.js';
+import { gui } from './gui.js';
+import { lcms } from './lcms.js';
 
 let _pythonEditor = null; // Codemirror editor
 let _output = [];         // Current script stdout
 let _skipLogin = false;   // Don't ask for login anymore
 let _nsix = false;        // If embedded in a nsix challenge
-
-
-let NSIX_LOGIN_URL = 'https://www.nsix.fr/login';
-let LCMS_URL = 'https://lcms2.nsix.fr/api';
-let COOKIE_DOMAIN = '.nsix.fr';
-if(dev) {
-  NSIX_LOGIN_URL = 'http://nsix.test:5173/login'
-  LCMS_URL = 'http://nsix.test:5000/api';
-  COOKIE_DOMAIN = '.nsix.test';
-}
 
 let _journeys = [];    // All journeys
 let _journey = null;   // Current journey
@@ -47,12 +32,6 @@ new ResizeObserver((entries) => {
     }
   }
 }).observe(document.getElementById('pythonsrc'));
-
-// Callback on exercise achievement
-function displaySuccess() {
-  const successOverlay = document.getElementById('overlay');
-  successOverlay.classList.remove('hidden');
-}
 
 /**
  * Load CSV tests from question format is :
@@ -97,9 +76,7 @@ function displayMenu() {
   const progress = document.getElementById('progress');
   const main = document.getElementById('main');
   const instruction = document.getElementById('instruction');
-  const help = document.getElementById('help');
-  help.classList.add('hidden');
-  hideHelp();
+  gui.hideHelp();
   _journey = null;
   _exercises = [];
   instruction.innerHTML = '';
@@ -344,6 +321,8 @@ function displayExercise() {
       }
     }
     _pythonEditor.setValue(prog);
+    // register exercise start
+    // TODO lcms
   } else {
     if(!_pythonEditor) { initPythonEditor(); }
     instruction.innerHTML = marked.parse('**Bravo !** Tous les exercices de ce niveau sont terminés !');
@@ -362,37 +341,26 @@ function nextExercise() {
   displayExercise();
 }
 
-// Display missing login warning popup
-function loginWarning() {
-  let lr = document.getElementById('login-required');
-  lr.style.width = '100%';
-  lr.onclick = hideLoginPopup;
-  document.getElementById('login-popup').style.transform = 'translate(0,0)';
-}
-
-function hideLoginPopup() {
-  document.getElementById('login-popup').style.transform = 'translate(0,-70vh)';
-  document.getElementById('login-required').style.width = '0%';
-}
-
 // Load exercises from remote LCMS
 function loadExercises(level, pushHistory){
   if(!level) { return console.warn('Missing level'); }
   if(!_user && !_skipLogin) {
-    return loginWarning();
+    return gui.loginWarning();
   }
-  showLoading();
+  gui.showLoading();
 
   _journey = _journeys[level-1];
   _exercises = _journey.activities;
   _exerciseIdx = -1;
-  if (options.exidx >= 0) {
-    _exerciseIdx = options.exidx;
+  if (config.exidx >= 0) {
+    _exerciseIdx = config.exidx;
   } else if (_user) {
     for (let i in _exercises) {
       if (_exerciseIdx < 0) {
         if (_user.results) {
-          let r = _user.results.find(r => r.activity_id == _exercises[i].id);
+          let r = _user.results.find(r => {
+            return r.activity_id == _exercises[i].id;
+          });
           if(!r || !r.success) {
             _exerciseIdx = parseInt(i);
           }
@@ -402,7 +370,7 @@ function loadExercises(level, pushHistory){
   } else {
     _exerciseIdx = 0;
   }
-  hideLoading();
+  gui.hideLoading();
   if(pushHistory) {
     history.pushState({'level': level}, '', `/?parcours=${level}`);
   }
@@ -417,38 +385,6 @@ function resetProg(){
     }
   }
 }
-
-// Send succes to lcms api
-function registerSuccess(activityId, answer){
-  if (options.preview) {
-    return console.info('Preview mode: no success registration');
-  }
-  const token = getAuthToken();
-  if(token) {
-    const body = {
-      'activity_id': activityId,
-      'duration': 0,
-      'success': true,
-      'response': _pythonEditor.getValue()
-    };
-    // FIXME start_time end_time duration attempts
-    const req = new Request(LCMS_URL + '/activity/' + activityId,  {
-      'method': 'POST',
-      'headers': {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      'body': JSON.stringify(body)
-    });
-    fetch(req).then(res => { return res.json(); })
-    .then(data => {
-      debug('Userinfo:', JSON.stringify(data));
-      _user.results.push(data);
-      updateAchievements();
-    });
-  }
-}
-
 
 // On Python script completion
 function onCompletion(mod) {
@@ -498,11 +434,15 @@ function onCompletion(mod) {
       if(parent) {
         parent.window.postMessage({
           'answer': answer,
-          'from': 'pix'
+          'from': 'python.nsix.fr'
         }, '*');
       }
-      registerSuccess(_exercise.id, answer);
-      displaySuccess();
+      lcms.registerSuccess(_exercise.id, answer, _pythonEditor.getValue(), (data) => {
+        config.log('Userinfo:', JSON.stringify(data));
+        _user.results.push(data);
+        updateAchievements();
+      });
+      gui.displaySuccess();
     }
   }
   const elt = document.createElement('div');
@@ -543,7 +483,7 @@ function outf(text) {
 
 function preloadImg(url) {
   return new Promise(async (resolve, reject) => {
-    debug('Fetch image', url);
+    config.log('Fetch image', url);
     const res = await fetch(url);
     const reader = new FileReader();
     const blob = await res.blob();
@@ -555,7 +495,7 @@ function preloadImg(url) {
 }
 
 async function loadPygame(prog){
-  debug('Load Pygame');
+  config.log('Load Pygame');
   const output = document.getElementById('output');
   const canvas = document.getElementById('pygamecanvas')
   const ctx = canvas.getContext("2d");
@@ -570,7 +510,7 @@ async function loadPygame(prog){
   // in order to avoid async issue while loading pygame : prefetch all dependencies
   for (let lib in skExternalLibs) {
     if (lib.match(/\/pygame\//) && !sessionStorage.getItem('extlib_' + lib)) {
-      debug('Fetch module', lib);
+      config.log('Fetch module', lib);
       let res = await fetch(skExternalLibs[lib]);
       let txt = await res.text();
       sessionStorage.setItem('extlib_' + lib, txt);
@@ -684,73 +624,27 @@ async function runit() {
 
 function login() {
   const current = location.href;
-  location.href = `${NSIX_LOGIN_URL}?dest=${current}`;
+  location.href = `${config.nsixLoginUrl}?dest=${current}`;
 }
 function registerSkipLogin() {
   _skipLogin = true;
 }
 
-function getAuthToken(){
-  let token = null;
-  if(document.cookie) {
-    const name = 'neossot='
-    let cookies = decodeURIComponent(document.cookie).split(';');
-    for (let c of cookies) {
-      if(token == null) {
-        let idx = c.indexOf(name);
-        if(idx > -1) {
-          token = c.substring(name.length + idx);
-        }
-      }
-    }
-  }
-  return token;
-}
-
-function loadUser(cb) {
-  let token = getAuthToken();
-  if(token) {
-    const meUrl = LCMS_URL + '/auth/userinfo';
-    const req = new Request(meUrl);
-    fetch(req, {
-      'headers': {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    }).then(res => {
-      let json = null;
-      if(res.status === 200) {
-        json = res.json();
-      }
-      return json;
-    }).then(data => {
-      cb(data);
-    }).catch(err => {
-      console.warn('Unable to fetch user', err);
-      debug(cb);
-      cb(null);
-    });
-  } else {
-    cb(null);
-  }
-}
-
 async function loadResults() {
-  let token = getAuthToken();
+  let token = lcms.getAuthToken();
   if(token) {
     let parcours = [];
     for (let j of _journeys) {
       parcours.push(`"${j.code}"`);
     }
-    const res = await fetch(LCMS_URL + `/resultats/?parcours=[${parcours.join(',')}]`, {
+    const res = await fetch(config.lcmsUrl + `/resultats/?parcours=[${parcours.join(',')}]`, {
       'headers': {
         'Authorization': 'Bearer ' + token
       }
     });
     if (res && res.status === 200) {
       const results = await res.json()
-      debug('Results found', results);
+      config.log('Results found', results);
       return results;
     }
     console.error('Unable to fetch results', res);
@@ -770,30 +664,10 @@ function getProgKey(){
   return key;
 }
 
-function showLoading() {
-  document.getElementById('loading').classList.remove('hidden');
-}
-
-function hideLoading() {
-  document.getElementById('loading').classList.add('hidden');
-}
-
-function toggleMenu(evt){
-  let eltMenu = document.getElementById('profileMenu');
-  if(eltMenu.classList.contains('hidden')){
-    eltMenu.classList.remove('hidden');
-    document.addEventListener('click', toggleMenu);
-  } else {
-    eltMenu.classList.add('hidden');
-    document.removeEventListener('click', toggleMenu);
-  }
-  evt.stopPropagation();
-}
-
 function logout() {
   const cookies = ['neossot'];
   for (let cookie of cookies) {
-    document.cookie=`${cookie}=; domain=${COOKIE_DOMAIN}; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    document.cookie=`${cookie}=; domain=${config.cookieDomain}; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
   }
   location.reload();
 }
@@ -866,46 +740,8 @@ function builtinRead(file) {
   return Sk.builtinFiles.files[file];
 }
 
-function fetchJourney(jid) {
-  return new Promise((resolve, reject) => {
-    const req = new Request(`${jid}`);
-    fetch(req).then(res => { return res.json(); })
-    .then(journey => {
-      resolve(journey);
-    });
-  });
-}
-
-function showHelp(show=true){
-  let panel = document.getElementById('help-panel');
-  if(show) {
-    panel.classList.remove('hidden-right');
-  } else {
-    panel.classList.add('hidden-right');
-  }
-}
-function hideHelp() { showHelp(false); }
-
 async function init(){
-  let purl = new URL(window.location.href);
-  if(purl && purl.searchParams) {
-    let index = purl.searchParams.get("index");
-    if(index) {
-      _exerciseIdx = index;
-    }
-    let challenge = purl.searchParams.get('challenge');
-  }
-
-  // Load journeys
-  let jids = [
-    'data/01-init.json', // Initiation
-    'data/02-premiere.json', // 1ere
-    // 'data/03-terminales.json', // Tale
-    // 'data/04-pirate.json'  // Jeu 2D "pirates"
-  ];
-  for (let jid of jids) {
-    _journeys.push(await fetchJourney(jid));
-  }
+  _journeys = await lcms.fetchJourneys();
 
   (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'turtlecanvas';
 
@@ -930,11 +766,12 @@ async function init(){
   // document.getElementById('skip-login-btn').addEventListener('click', registerSkipLogin);
   document.getElementById('level-1').addEventListener('click', () => loadExercises(1, true));
   document.getElementById('level-2').addEventListener('click', () => loadExercises(2, true));
-  // document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));
+  document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));
   // document.getElementById('level-4').addEventListener('click', () => loadExercises(4, true));
-  document.getElementById('profileMenuBtn').addEventListener('click', toggleMenu);
-  document.getElementById('help').addEventListener('click', showHelp);
-  document.getElementById('help-panel').addEventListener('click', hideHelp);
+  document.getElementById('profileMenuBtn').addEventListener('click', gui.toggleMenu);
+
+  document.getElementById('help').addEventListener('click', gui.showHelp);
+  document.getElementById('help-panel').addEventListener('click', gui.hideHelp);
 
   // Save script on keystroke
   document.addEventListener('keyup', evt => {
@@ -952,9 +789,9 @@ async function init(){
     }
   });
 
-  loadUser(async (user) => {
+  lcms.loadUser(async (user) => {
     // TODO session cache
-    debug('User loaded', user);
+    config.log('User loaded', user);
 
     if(user) {
       _user = user;
@@ -968,13 +805,13 @@ async function init(){
     }
 
     let loaded = false;
-    let lvl = options['parcours'];
+    let lvl = config.parcours;
     if(lvl >= 0) {
       loadExercises(lvl);
       loaded = true;
     }
     if(!loaded) { displayMenu(); }
-    hideLoading();
+    gui.hideLoading();
   });
 }
 
