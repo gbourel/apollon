@@ -5,3 +5,4 @@ public/style.css
 node_modules/
 
 /dist
+/tmp

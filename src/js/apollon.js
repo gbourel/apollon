@@ -1,5 +1,9 @@
-const VERSION = 'v0.11.1';
+const VERSION = 'v0.11.2';
 document.getElementById('version').textContent = VERSION;
+
+import { marked } from 'marked';
+import { baseUrl } from "marked-base-url";
+import { pandoc } from "marked-pandoc";
 
 import { config } from './config.js';
 import { gui } from './gui.js';
@@ -278,6 +282,8 @@ function displayExercise() {
       loadTestsCSV(_exercise.validation);
     }
     // title.innerHTML = _exercise.title || 'Entrainement';
+    marked.use(baseUrl(`https://filedn.nsix.fr/act/${_exercise.id}/`));
+    marked.use(pandoc);
     if(_exercise.instruction) { // deprecated format
       instruction.innerHTML = marked.parse(_exercise.instruction);
     } else {
