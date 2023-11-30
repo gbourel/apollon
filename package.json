@@ -6,19 +6,15 @@
   "license": "AGPL-3.0",
   "author": "GB",
   "devDependencies": {
-    "@rollup/plugin-terser": "^0.4.4",
     "marked": "^4.0.14",
     "npm-run-all": "^4.1.5",
-    "rollup": "^4.1.0",
-    "tailwindcss": "^3.0.23"
+    "tailwindcss": "^3.0.23",
+    "vite": "^4.5.0"
   },
   "scripts": {
-    "build": "npm run build-css && npm run build-js",
-    "build-css": "npx tailwindcss --minify -i ./src/css/apollon.css -o ./public/style.css",
-    "build-js": "npx rollup --config",
-    "dev": "live-server --host=nsix.test --port=2901 public",
-    "rollup": "npx rollup --config --watch",
-    "tailwind": "npx tailwindcss -i ./src/css/apollon.css -o ./public/style.css --watch",
-    "start": "run-p --print-label tailwind rollup dev"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "npm run dev"
   }
 }

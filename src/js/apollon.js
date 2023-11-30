@@ -1,4 +1,4 @@
-const VERSION = 'v0.10.5';
+const VERSION = 'v0.11.0';
 document.getElementById('version').textContent = VERSION;
 
 import { config } from './config.js';
@@ -42,6 +42,7 @@ new ResizeObserver((entries) => {
  */
 function loadTestsCSV(csv) {
   _tests = [];
+  if (!csv) { return console.error('Missing CSV tests.'); }
   let lines = csv.split('\n');
   for (let line of lines) {
     let val = line.split(';');
@@ -259,7 +260,7 @@ function displayExercise() {
   menu.style.transform = 'translate(0, 100vh)';
   setTimeout(() => { menu.style.display = 'none' }, 300);
   main.classList.remove('hidden');
-  help.classList.remove('hidden');
+  // help.classList.remove('hidden'); TODO
   pgcanvas.classList.add('hidden');
   output.classList.add('md:w-1/2');
 
@@ -318,6 +319,9 @@ function displayExercise() {
     } else {
       if (result) {
         prog = result.response;
+        if (prog.startsWith('"')) {
+          prog = JSON.parse(prog)
+        }
       }
     }
     _pythonEditor.setValue(prog);
@@ -488,7 +492,7 @@ function preloadImg(url) {
     const reader = new FileReader();
     const blob = await res.blob();
     reader.onload = (e) => {
-      resolve(e.target.result);
+      if (e) { resolve(e.target.result); }
     }
     reader.readAsDataURL(blob);
   });

@@ -26,7 +26,7 @@ export const gui = {
   loginWarning: () => {
     let lr = document.getElementById('login-required');
     lr.style.width = '100%';
-    lr.onclick = hideLoginPopup;
+    lr.onclick = gui.hideLoginPopup;
     document.getElementById('login-popup').style.transform = 'translate(0,0)';
   },
   hideLoginPopup: () => {
@@ -38,10 +38,10 @@ export const gui = {
     let eltMenu = document.getElementById('profileMenu');
     if(eltMenu.classList.contains('hidden')){
       eltMenu.classList.remove('hidden');
-      document.addEventListener('click', toggleMenu);
+      document.addEventListener('click', gui.toggleMenu);
     } else {
       eltMenu.classList.add('hidden');
-      document.removeEventListener('click', toggleMenu);
+      document.removeEventListener('click', gui.toggleMenu);
     }
     evt.stopPropagation();
   },
