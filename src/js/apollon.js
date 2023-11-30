@@ -1,4 +1,4 @@
-const VERSION = 'v0.11.3';
+const VERSION = 'v0.11.4';
 document.getElementById('version').textContent = VERSION;
 
 import { marked } from 'marked';
@@ -11,6 +11,7 @@ import { lcms } from './lcms.js';
 
 let _pythonEditor = null; // Codemirror editor
 let _output = [];         // Current script stdout
+let _userOutput = '';     // Current script user output
 let _skipLogin = false;   // Don't ask for login anymore
 let _nsix = false;        // If embedded in a nsix challenge
 
@@ -97,7 +98,6 @@ let delta_x = 0
 
 function updateListTx() {
   if(main === null) { return; }
-  console.info(main.attr('transform'));
   main.animate({
     transform: `t${-delta_x * MARKER_W}`
   }, 1000, mina.easeinout, () => {
@@ -347,6 +347,7 @@ function nextExercise() {
   successOverlay.classList.add('hidden');
   var outputpre = document.getElementById('output');
   outputpre.innerHTML = ''
+  _userOutput = '';
   _exerciseIdx++;
   displayExercise();
 }
@@ -396,6 +397,19 @@ function resetProg(){
   }
 }
 
+function checkTest(idx) {
+  let test = _tests[idx];
+  if(test.python == "USER_OUTPUT") {
+    let uo = _userOutput.replace(/(?:\r\n|\r|\n)/g, ' ');
+    let val = test.value.replace(/(?:\r\n|\r|\n)/g, ' ');
+    return uo.trim() === val.trim();
+  } else if (test.python == "MAX_LINES") {
+    let lines = _pythonEditor.getValue().trim().split(/\r\n|\r|\n/).length;
+    return lines <= test.value;
+  }
+  return test.value.trim() === _output[idx].trim();
+}
+
 // On Python script completion
 function onCompletion(mod) {
   if (!_exercise) { return; }
@@ -417,9 +431,19 @@ function onCompletion(mod) {
       if(_tests[i].option !== 'hide') {
         line = document.importNode(lineTemplate.content, true);
         let cells = line.querySelectorAll('td');
-        cells[0].textContent = _tests[i].python;
-        cells[1].textContent = _tests[i].value.trim();
-        cells[2].textContent = _tests[i].live ? _tests[i].passed : _output[i].trim();
+        if (_tests[i].python === 'USER_OUTPUT') {
+          cells[0].textContent = 'Affichage avec print';
+          cells[1].textContent = _tests[i].value.trim();
+          cells[2].textContent = _userOutput.trim();
+        } else if (_tests[i].python === 'MAX_LINES') {
+          cells[0].textContent = 'Nombre de lignes';
+          cells[1].textContent = `Max. ${_tests[i].value.trim()}`;
+          cells[2].textContent = _pythonEditor.getValue().trim().split(/\r\n|\r|\n/).length;
+        } else {
+          cells[0].textContent = _tests[i].python;
+          cells[1].textContent = _tests[i].value.trim();
+          cells[2].textContent = _tests[i].live ? _tests[i].passed : _output[i].trim();
+        }
         if(hasHelp) {
           cells[3].textContent = _tests[i].option;
           cells[3].style.display = 'table-cell';
@@ -432,7 +456,7 @@ function onCompletion(mod) {
         cells[0].textContent = "Test caché";
       }
       if((_tests[i].live && _tests[i].passed) ||
-         (!_tests[i].live && _tests[i].value.trim() === _output[i].trim())) {
+         (!_tests[i].live && checkTest(i))) {
         line && line.querySelector('tr').classList.add('ok');
       } else {
         nbFailed += 1;
@@ -491,6 +515,7 @@ function outf(text) {
   } else if(_over === true && text.startsWith('__TESTRES__')) {
     _output.push(text.substring(12).trim());
   } else {
+    _userOutput += text;
     document.getElementById('output').innerHTML += `<div>${text}</div>`;
   }
 }
@@ -590,13 +615,15 @@ async function runit() {
   prog += "\nprint('### END_OF_USER_INPUT ###')\n";
   for (let t of _tests) {
     let instruction = t.python.trim();
-    if(t.live) { instruction = 'print("-")'; }
-    else if(!instruction.startsWith('print')) {
+    if(t.live || instruction == 'USER_OUTPUT' || instruction == 'MAX_LINES') {
+      instruction = 'print("__TESTRES__ -")';
+    } else if(!instruction.startsWith('print')) {
       instruction = `print("__TESTRES__", ${instruction})`;
     }
     prog += "\n" + instruction;
   }
   _output = [];
+  _userOutput = '';
   _over = false;
   if(prog.startsWith('import turtle')) {
     document.getElementById('turtlecanvas').classList.remove('hidden');
