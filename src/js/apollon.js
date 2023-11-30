@@ -1,4 +1,4 @@
-const VERSION = 'v0.11.2';
+const VERSION = 'v0.11.3';
 document.getElementById('version').textContent = VERSION;
 
 import { marked } from 'marked';
@@ -426,6 +426,10 @@ function onCompletion(mod) {
         } else {
           cells[3].style.display = 'none';
         }
+      } else {
+        line = document.importNode(lineTemplate.content, true);
+        let cells = line.querySelectorAll('td');
+        cells[0].textContent = "Test caché";
       }
       if((_tests[i].live && _tests[i].passed) ||
          (!_tests[i].live && _tests[i].value.trim() === _output[i].trim())) {
