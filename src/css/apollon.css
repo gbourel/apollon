@@ -1214,6 +1214,9 @@ ul {
   margin-left: 1.5rem;
   list-style-type: circle;
 }
+#instruction {
+  text-align: justify;
+}
 #instruction table {
   margin: 0.5rem 0rem;
 }
@@ -1226,6 +1229,12 @@ ul {
 }
 #instruction img.center {
   margin: auto;
+}
+#instruction .pull-right {
+  float: right;
+}
+#instruction .pull-left {
+  float: left;
 }
 
 /* Background */
