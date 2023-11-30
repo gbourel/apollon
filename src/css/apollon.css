@@ -1232,9 +1232,11 @@ ul {
 }
 #instruction .pull-right {
   float: right;
+  margin-left: 1rem;
 }
 #instruction .pull-left {
   float: left;
+  margin-right: 1rem;
 }
 
 /* Background */
