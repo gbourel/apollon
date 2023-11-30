@@ -1,4 +1,4 @@
-const VERSION = 'v0.11.0';
+const VERSION = 'v0.11.1';
 document.getElementById('version').textContent = VERSION;
 
 import { config } from './config.js';

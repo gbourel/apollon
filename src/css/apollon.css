@@ -1141,7 +1141,7 @@ header {
 
 /* Src / Output */
 #output {
-  min-height: 6rem;
+  min-height: 18rem;
 }
 .error {
   color: #EE4444;
