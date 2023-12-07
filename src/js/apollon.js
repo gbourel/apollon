@@ -1,4 +1,4 @@
-const VERSION = 'v0.11.5';
+const VERSION = 'v0.11.6';
 document.getElementById('version').textContent = VERSION;
 
 import { marked } from 'marked';
@@ -168,7 +168,7 @@ function displayExercisesNav() {
     main.add(group)
 
     // FIXME hack to hide nav for 2d game journey only
-    if (!done && _journey && _journey.id === 'b1ae00cc-9056-45ec-bd20-edab5ea8b166') {
+    if (!done && _journey && _journey.code === 'WHISRQ') {
       return;
     }
   }
@@ -808,7 +808,7 @@ async function init(){
   document.getElementById('level-1').addEventListener('click', () => loadExercises(1, true));
   document.getElementById('level-2').addEventListener('click', () => loadExercises(2, true));
   document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));
-  // document.getElementById('level-4').addEventListener('click', () => loadExercises(4, true));
+  document.getElementById('level-4').addEventListener('click', () => loadExercises(4, true));
   document.getElementById('profileMenuBtn').addEventListener('click', gui.toggleMenu);
 
   document.getElementById('help').addEventListener('click', gui.showHelp);

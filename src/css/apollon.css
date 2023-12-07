@@ -1238,6 +1238,9 @@ ul {
   float: left;
   margin-right: 1rem;
 }
+#instruction a {
+  color: #e5c5ff;
+}
 
 /* Background */
 

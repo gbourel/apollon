@@ -60,7 +60,7 @@ export const lcms = {
       `${config.lcmsUrl}/parcours/code/EXNZJN`, // Initiation
       `${config.lcmsUrl}/parcours/code/NZGTIQ`, // 1ere
       `${config.lcmsUrl}/parcours/code/KIYYTB`, // Tale
-      // `${config.lcmsUrl}/parcours/code/TODO`  // Jeu 2D "pirates"
+      `${config.lcmsUrl}/parcours/code/WHISRQ`  // Jeu 2D "pirates"
     ];
     for (let jid of jids) {
       res.push(await lcms.fetchJourney(jid));
