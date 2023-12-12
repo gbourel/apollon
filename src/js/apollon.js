@@ -1,4 +1,4 @@
-const VERSION = 'v0.11.6';
+const VERSION = 'v0.11.7';
 document.getElementById('version').textContent = VERSION;
 
 import { marked } from 'marked';
@@ -705,14 +705,6 @@ function getProgKey(){
   return key;
 }
 
-function logout() {
-  const cookies = ['neossot'];
-  for (let cookie of cookies) {
-    document.cookie=`${cookie}=; domain=${config.cookieDomain}; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-  }
-  location.reload();
-}
-
 function updateAchievements() {
   if(!_user || !_journeys) { return; }
   for (let i = 1; i <= _journeys.length ; i++){
@@ -797,7 +789,7 @@ async function init(){
     gfm: true
   });
 
-  document.getElementById('logoutBtn').addEventListener('click', logout);
+  document.getElementById('logoutBtn').addEventListener('click', lcms.logout);
   document.getElementById('runbtn').addEventListener('click', runit);
   document.getElementById('homebtn').addEventListener('click', () => { displayMenu(); history.pushState(null, '', '/'); });
   document.getElementById('nextbtn').addEventListener('click', nextExercise);

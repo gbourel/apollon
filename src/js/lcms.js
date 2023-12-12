@@ -17,6 +17,15 @@ export const lcms = {
     }
     return token;
   },
+  logout: (reload=true) => {
+    const cookies = ['neossot'];
+    for (let cookie of cookies) {
+      document.cookie=`${cookie}=; domain=${config.cookieDomain}; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    }
+    if (reload) {
+      window.location.reload();
+    }
+  },
   loadUser: (cb) => {
     let token = lcms.getAuthToken();
     if(token) {
@@ -29,11 +38,10 @@ export const lcms = {
           'Accept': 'application/json'
         }
       }).then(res => {
-        let json = null;
         if(res.status === 200) {
-          json = res.json();
+          return res.json();
         }
-        return json;
+        return lcms.logout(false);
       }).then(data => {
         cb(data);
       }).catch(err => {
