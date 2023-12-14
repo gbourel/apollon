@@ -29,26 +29,32 @@ export const lcms = {
   loadUser: (cb) => {
     let token = lcms.getAuthToken();
     if(token) {
-      const meUrl = config.lcmsUrl + '/auth/userinfo';
-      const req = new Request(meUrl);
-      fetch(req, {
-        'headers': {
-          'Authorization': 'Bearer ' + token,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      }).then(res => {
-        if(res.status === 200) {
-          return res.json();
-        }
-        return lcms.logout(false);
-      }).then(data => {
-        cb(data);
-      }).catch(err => {
-        console.warn('Unable to fetch user', err);
-        config.log(cb);
-        cb(null);
-      });
+      try {
+        const meUrl = `${config.lcmsUrl}/auth/userinfo`;
+        const req = new Request(meUrl);
+        fetch(req, {
+          'headers': {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }).then(res => {
+          console.info('response', res);
+          if(res.status === 200) {
+            return res.json();
+          }
+          return lcms.logout(false);
+        }).then(data => {
+          cb(data);
+        }).catch(err => {
+          console.warn('Unable to fetch user', err);
+          lcms.logout(false);
+          config.log(cb);
+          cb(null);
+        });
+      } catch (error) {
+        console.info('error', error);
+      }
     } else {
       cb(null);
     }
