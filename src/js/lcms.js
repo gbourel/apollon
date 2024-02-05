@@ -39,7 +39,6 @@ export const lcms = {
             'Accept': 'application/json'
           }
         }).then(res => {
-          console.info('response', res);
           if(res.status === 200) {
             return res.json();
           }
@@ -89,22 +88,25 @@ export const lcms = {
     const token = lcms.getAuthToken();
     if(token) {
       const body = {
-        'activity_id': activityId,
-        'duration': 0,
-        'success': true,
-        'response': content
+        activity_id: activityId,
+        duration: 0,
+        success: true,
+        response: content
       };
       // FIXME start_time end_time duration attempts
-      const req = new Request(config.lcmsUrl + '/activity/' + activityId,  {
-        'method': 'POST',
-        'headers': {
-          'Authorization': 'Bearer ' + token,
+      const req = new Request(`${config.lcmsUrl}/activity/${activityId}`,  {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        'body': JSON.stringify(body)
+        body: JSON.stringify(body)
       });
       fetch(req).then(res => { return res.json(); })
-      .then(cb);
+      .then(cb)
+      .catch(err => {
+        console.error('Unable to register success', err);
+      });
     }
   }
 };

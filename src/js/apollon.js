@@ -29,6 +29,8 @@ let _user = null;
 
 const imgCache = {};
 
+console.info(`Version ${VERSION}.`)
+
 // Resize src textarea when parent div is resized
 new ResizeObserver((entries) => {
   for (const entry of entries) {
@@ -687,7 +689,7 @@ async function loadResults() {
     });
     if (res && res.status === 200) {
       const results = await res.json()
-      config.log('Results found', results);
+      // config.log('Results found', results);
       return results;
     }
     console.error('Unable to fetch results', res);
@@ -826,8 +828,6 @@ async function init(){
 
   lcms.loadUser(async (user) => {
     // TODO session cache
-    config.log('User loaded', user);
-
     if(user) {
       _user = user;
       document.getElementById('username').innerHTML = user.firstName || 'Moi';

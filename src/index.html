@@ -24,7 +24,7 @@
   <div id="loading" class="z-20">
     <img src="img/python.png" alt="Logo Python">
   </div>
-  <div id="profile">
+  <div id="profile" class="standalone hidden">
     <button id="login" class="hidden m-5 p-1 shadow-lg bg-yellow-600 rounded px-2 text-slate-00" type="button">Connexion</button>
     <div id="profile-menu" class="hidden mt-5 mr-2">
       <button id="profileMenuBtn" type="button" class="m-1 p-2 bg-slate-900 flex text-xs rounded">
@@ -158,11 +158,13 @@
     </nav>
 
   <header class="p-4 bg-slate-800 bg-opacity-50 rounded-t-lg">
-    <h3>
-      <img src="img/python.png" alt="Logo Python" class="inline-block" style="height: 32px; margin-top: -4px;">
-      <span id="title" class="text-blue-300 font-bold">Entraînement à la programmation</span>
-    </h3>
-    <svg id="progress" class="hidden"></svg>
+    <div class="standalone hidden">
+      <h3>
+        <img src="img/python.png" alt="Logo Python" class="inline-block" style="height: 32px; margin-top: -4px;">
+        <span id="title" class="text-blue-300 font-bold">Entraînement à la programmation</span>
+      </h3>
+      <svg id="progress" class="hidden"></svg>
+    </div>
     <p id="instruction"></p>
     <div id="help" class="hidden" title="Besoin d'aide ?">
       <img src="img/buoy.svg" alt="Aide">
@@ -182,7 +184,7 @@
     </div>
     <button id="runbtn" class="bg-blue-500 rounded my-2 p-2 shadow-md" type="button">Run</button>
     <button id="resetbtn" class="bg-purple-700 rounded mx-4 my-2 p-2 shadow-md disabled:bg-gray-600 disabled:text-gray-400" type="button">Réinitialiser</button>
-    <button id="homebtn" class="bg-slate-500 float-right rounded my-2 p-2 shadow-md" type="button">Home</button>
+    <button id="homebtn" class="standalone hidden bg-slate-500 float-right rounded my-2 p-2 shadow-md" type="button">Home</button>
   </main>
 
 
