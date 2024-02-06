@@ -120,6 +120,8 @@ function updateListTx() {
 
 /// Display exercices list for navigation on top.
 function displayExercisesNav() {
+  if (!_exercises || !_exercises.length) { return; }
+
   const enabled = ['#ffeebc', '#366f9f', '#234968'];
   const disabled = ['#aaaaaa', '#333333', '#777777'];
   const MARKER_RADIUS = 12;
@@ -255,9 +257,9 @@ function initPythonEditor() {
 }
 
 /**
- * Affiche l'exercice en cours (_exercises[_exerciseIdx]).
+ * Affiche l'exercice en cours (act ou _exercises[_exerciseIdx]).
  */
-function displayExercise() {
+function displayExercise(act) {
   const instruction = document.getElementById('instruction');
   const main = document.getElementById('main');
   const menu = document.getElementById('mainmenu');
@@ -271,7 +273,7 @@ function displayExercise() {
   pgcanvas.classList.add('hidden');
   output.classList.add('md:w-1/2');
 
-  _exercise = _exercises[_exerciseIdx];
+  _exercise = act || _exercises[_exerciseIdx];
 
   if (_exercise) {
     let prog = '';
@@ -472,20 +474,26 @@ function onCompletion(mod) {
       }
     }
     if (nbFailed === 0) {
-      const answer = sha256(_output);
-      if(parent) {
-        parent.window.postMessage({
-          'answer': answer,
+      if(window.parent) {
+        window.parent.window.postMessage({
+          'answer': '__done__',
+          'content': _pythonEditor.getValue(),
           'from': 'python.nsix.fr'
         }, '*');
+      } else {
+        const answer = sha256('' + _exercise.id);
+        lcms.registerSuccess(_exercise.id, answer, _pythonEditor.getValue(), (data) => {
+          config.log('Userinfo:', JSON.stringify(data));
+          if (_user.results) {
+            _user.results.push(data);
+          }
+          updateAchievements();
+        });
+        gui.displaySuccess();
       }
-      lcms.registerSuccess(_exercise.id, answer, _pythonEditor.getValue(), (data) => {
-        config.log('Userinfo:', JSON.stringify(data));
-        _user.results.push(data);
-        updateAchievements();
-      });
-      gui.displaySuccess();
     }
+  } else {
+    console.warn('Output count unmatched', _output);
   }
   const elt = document.createElement('div');
   let content = '';
@@ -682,7 +690,7 @@ async function loadResults() {
     for (let j of _journeys) {
       parcours.push(`"${j.code}"`);
     }
-    const res = await fetch(config.lcmsUrl + `/resultats/?parcours=[${parcours.join(',')}]`, {
+    const res = await fetch(`${config.lcmsUrl}/resultats/?parcours=[${parcours.join(',')}]`, {
       'headers': {
         'Authorization': 'Bearer ' + token
       }
@@ -778,8 +786,6 @@ function builtinRead(file) {
 }
 
 async function init(){
-  _journeys = await lcms.fetchJourneys();
-
   (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'turtlecanvas';
 
   // Sk.onBeforeImport = function(library) {
@@ -792,6 +798,12 @@ async function init(){
   marked.setOptions({
     gfm: true
   });
+
+  if(config.activity) {
+    console.info("Specific activity", config.activity);
+  } else {
+    _journeys = await lcms.fetchJourneys();
+  }
 
   document.getElementById('logoutBtn').addEventListener('click', lcms.logout);
   document.getElementById('runbtn').addEventListener('click', runit);
@@ -832,17 +844,22 @@ async function init(){
       _user = user;
       document.getElementById('username').innerHTML = user.firstName || 'Moi';
       document.getElementById('profile-menu').classList.remove('hidden');
-      _user.results = await loadResults();
-      updateAchievements();
+      if (!config.activity) {
+        _user.results = await loadResults();
+        updateAchievements();
+      }
     } else {
       document.getElementById('login').classList.remove('hidden');
       _user = null;
     }
 
     let loaded = false;
-    let lvl = config.parcours;
-    if(lvl >= 0) {
-      loadExercises(lvl);
+    if (config.activity) {
+      let act = await lcms.fetchActivity(config.activity);
+      displayExercise(act);
+      loaded = true;
+    } else if (config.parcours >= 0) {
+      loadExercises(config.parcours);
       loaded = true;
     }
     if(!loaded) { displayMenu(); }
