@@ -59,8 +59,11 @@ export const lcms = {
     }
   },
   fetchJourney: (jid) => {
+    const token = lcms.getAuthToken();
     return new Promise((resolve, reject) => {
-      const req = new Request(`${jid}`);
+      const req = new Request(`${jid}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       fetch(req).then(res => { return res.json(); })
       .then(journey => {
         resolve(journey);

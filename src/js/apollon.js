@@ -287,6 +287,7 @@ function displayExercise(act) {
       loadTestsCSV(_exercise.validation);
     }
     // title.innerHTML = _exercise.title || 'Entrainement';
+    // TODO move image base path to activity / exercise content
     marked.use(baseUrl(`https://filedn.nsix.fr/act/${_exercise.id}/`));
     marked.use(pandoc);
     marked.use(newtab);
@@ -483,7 +484,6 @@ function onCompletion(mod) {
       } else {
         const answer = sha256('' + _exercise.id);
         lcms.registerSuccess(_exercise.id, answer, _pythonEditor.getValue(), (data) => {
-          config.log('Userinfo:', JSON.stringify(data));
           if (_user.results) {
             _user.results.push(data);
           }
