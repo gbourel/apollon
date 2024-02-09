@@ -91,8 +91,12 @@ function displayMenu() {
   instruction.innerHTML = '';
   progress.classList.add('hidden');
   main.classList.add('hidden');
-  menu.style.display = 'block';
-  menu.style.transform = 'translate(0, 0)';
+  if (_nsix) {
+    menu.style.display = 'none';
+  } else {
+    menu.style.display = 'block';
+    menu.style.transform = 'translate(0, 0)';
+  }
 }
 
 let main = null;
@@ -720,6 +724,7 @@ function getProgKey(){
 function updateAchievements() {
   if(!_user || !_journeys) { return; }
   for (let i = 1; i <= _journeys.length ; i++){
+    if (!_journeys[i-1].activities) { continue; }
     let elt = document.querySelector(`#level-${i} .percent`);
     let total =  _journeys[i-1].activities.length;
     let done = 0;
