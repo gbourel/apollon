@@ -479,7 +479,7 @@ function onCompletion(mod) {
       }
     }
     if (nbFailed === 0) {
-      if(window.parent) {
+      if(_nsix) {
         window.parent.window.postMessage({
           'answer': '__done__',
           'content': _pythonEditor.getValue(),
