@@ -1,4 +1,4 @@
-const VERSION = 'v0.11.9';
+const VERSION = 'v0.14.0';
 document.getElementById('version').textContent = VERSION;
 
 import { marked } from 'marked';
@@ -16,14 +16,16 @@ let _userOutput = '';     // Current script user output
 let _skipLogin = false;   // Don't ask for login anymore
 let _nsix = false;        // If embedded in a nsix challenge
 
-let _journeys = [];    // All journeys
-let _journey = null;   // Current journey
-let _exercises = [];   // All exercises for current journey
-let _exerciseIdx = 0;  // Current exercise index
-let _exercise = null;  // Current exercise
-let _tests = [];       // Tests for current exercise
-let _over = false;     // currently running program is terminated
-let _lastFocus = null; // focused element before program start (for graphical display only)
+let _journeys = [];       // All journeys
+let _journey = null;      // Current journey
+let _activity = null;     // Current activity
+let _activityIdx = null;  // Current activity index
+let _quiz = [];      // All exercises for current journey
+let _questionIdx = 0;     // Current exercise index
+let _question = null;     // Current exercise
+let _tests = [];          // Tests for current exercise
+let _over = false;        // currently running program is terminated
+let _lastFocus = null;    // focused element before program start (for graphical display only)
 
 let _user = null;
 
@@ -87,7 +89,6 @@ function displayMenu() {
   const instruction = document.getElementById('instruction');
   gui.hideHelp();
   _journey = null;
-  _exercises = [];
   instruction.innerHTML = '';
   progress.classList.add('hidden');
   main.classList.add('hidden');
@@ -107,11 +108,11 @@ function updateListTx() {
   if(main === null) { return; }
   main.animate({
     transform: `t${-delta_x * MARKER_W}`
-  }, 1000, mina.easeinout, () => {
+  }, 1000, main.easeinout, () => {
     for (let i = 0; i < markers.length; i++) {
       let content = markers[i].children();
-      content[0].attr('stroke', _exerciseIdx === i ? '#006CC5' : '#444');
-      content[1].attr('fill', _exerciseIdx === i ? '#006CC5' : '#444');
+      content[0].attr('stroke', _activityIdx === i ? '#006CC5' : '#444');
+      content[1].attr('fill', _activityIdx === i ? '#006CC5' : '#444');
     }
   });
   markers[delta_x].attr('display', 'none');
@@ -121,10 +122,25 @@ function updateListTx() {
   }
 }
 
+/// Check if all activity questions are done.
+function isDone(journey, actIdx) {
+  if (!journey || !journey.results) { return false; }
+  const act = journey.activities[actIdx];
+  if (act && journey.results[act.id]) {
+    let ok = true;
+    for (const r of journey.results[act.id]) {
+      if (!(r.success || r.done)) {
+        ok = false;
+      }
+    }
+    return ok;
+  }
+  return false;
+}
 
 /// Display exercices list for navigation on top.
-function displayExercisesNav() {
-  if (!_exercises || !_exercises.length) { return; }
+function displayActivitiesNav() {
+  if (!_journey || !_journey.activities) { return; }
 
   const enabled = ['#ffeebc', '#366f9f', '#234968'];
   const disabled = ['#aaaaaa', '#333333', '#777777'];
@@ -133,35 +149,35 @@ function displayExercisesNav() {
   const MARKER_PY = 24;
   const MARKER_W = 42;
 
-  let elt = document.getElementById('progress');
-  let sp = Snap('#progress');
+  const elt = document.getElementById('progress');
+  const sp = Snap('#progress');
   sp.clear();
   elt.classList.remove('hidden')
 
-  let main = sp.g();
+  const main = sp.g();
   markers = [];
-  for (let i = 0; i < _exercises.length; i++) {
-    let x = MARKER_PX + MARKER_W*i;
-    if (!_user.results) { break; }
-    let done  = _user.results.find(r => r.activity_id == _exercises[i].id && r.success)
-    let colors = (done ? enabled : disabled);
-    let marker = sp.circle(x, MARKER_PY, MARKER_RADIUS);
+  for (let i = 0; i < _journey.activities.length; i++) {
+    const x = MARKER_PX + MARKER_W*i;
+    // if (!_user.results) { break; }
+    const done  = isDone(_journey, i);
+    const colors = (done ? enabled : disabled);
+    const marker = sp.circle(x, MARKER_PY, MARKER_RADIUS);
     marker.attr({
       fill: colors[0],
-      stroke: _exerciseIdx === i ? '#006CC5' : colors[1],
+      stroke: _activityIdx === i ? '#006CC5' : colors[1],
       stokeWidth: 12
     });
     let label = sp.text(x, MARKER_PX + 5, ''+i);
     label.attr({
-      fill: _exerciseIdx === i ? '#006CC5' : colors[2],
+      fill: _activityIdx === i ? '#006CC5' : colors[2],
       style: 'font-size:15px;text-align:center;text-anchor:middle;'
     });
     let group = sp.g(marker, label);
     group.attr({
       cursor: 'pointer'
     });
-    group.click((evt) => {
-      _exerciseIdx = i;
+    group.click(async (evt) => {
+      await loadActivity(i, true);
       displayExercise();
     });
     group.hover(evt => {
@@ -181,13 +197,13 @@ function displayExercisesNav() {
       return;
     }
   }
-  let mp = sp.circle(MARKER_PX-4, MARKER_PX, MARKER_RADIUS);
+  const mp = sp.circle(MARKER_PX-4, MARKER_PX, MARKER_RADIUS);
     mp.attr({
       fill: enabled[0],
       stroke: enabled[1],
       stokeWidth: 12
     });
-  let lp = sp.text(MARKER_PX-4, MARKER_PY + 5, '<');
+  const lp = sp.text(MARKER_PX-4, MARKER_PY + 5, '<');
   lp.attr({
     fill: enabled[2],
     style: 'font-size:15px;text-align:center;text-anchor:middle;'
@@ -209,13 +225,13 @@ function displayExercisesNav() {
       transform: "s1", // Basic rotation around a point. No frills.
     }, 100);
   });
-  let mn = sp.circle(MARKER_PX-4, MARKER_PX, MARKER_RADIUS);
+  const mn = sp.circle(MARKER_PX-4, MARKER_PX, MARKER_RADIUS);
     mn.attr({
       fill: enabled[0],
       stroke: enabled[1],
       stokeWidth: 12
     });
-  let ln = sp.text(MARKER_PX-4, MARKER_PY + 5, '<');
+  const ln = sp.text(MARKER_PX-4, MARKER_PY + 5, '<');
   ln.attr({
     fill: enabled[2],
     style: 'font-size:15px;text-align:center;text-anchor:middle;'
@@ -239,7 +255,7 @@ function displayExercisesNav() {
   });
 
   if(MARKER_PX + MARKER_W*markers.length > elt.clientWidth) {
-    let overflow = (MARKER_PX + MARKER_W*markers.length) - elt.clientWidth;
+    const overflow = (MARKER_PX + MARKER_W*markers.length) - elt.clientWidth;
     console.info('Too large', overflow / MARKER_W);
     delta_x = Math.round(overflow / MARKER_W);
   }
@@ -261,9 +277,9 @@ function initPythonEditor() {
 }
 
 /**
- * Affiche l'exercice en cours (act ou _exercises[_exerciseIdx]).
+ * Affiche l'exercice en cours.
  */
-function displayExercise(act) {
+function displayExercise() {
   const instruction = document.getElementById('instruction');
   const main = document.getElementById('main');
   const menu = document.getElementById('mainmenu');
@@ -277,29 +293,26 @@ function displayExercise(act) {
   pgcanvas.classList.add('hidden');
   output.classList.add('md:w-1/2');
 
-  _exercise = act || _exercises[_exerciseIdx];
+  if (_quiz.questions) {
+    _question = _quiz.questions[_questionIdx];
+  }
 
-  if (_exercise) {
+  if (_question) {
     let prog = '';
     let lastprog = localStorage.getItem(getProgKey());
     if(!_pythonEditor) {
       initPythonEditor();
     }
-    if(_exercise.tests) { // deprecated format
-      loadTestsCSV(_exercise.tests);
-    } else {
-      loadTestsCSV(_exercise.validation);
-    }
-    // title.innerHTML = _exercise.title || 'Entrainement';
+    loadTestsCSV(_question.answers);
+
+    // title.innerHTML = _question.title || 'Entrainement';
     // TODO move image base path to activity / exercise content
-    marked.use(baseUrl(`https://filedn.nsix.fr/act/${_exercise.id}/`));
+    marked.use(baseUrl(`https://filedn.nsix.fr/act/${_activity.id}/`));
     marked.use(pandoc);
     marked.use(newtab);
-    if(_exercise.instruction) { // deprecated format
-      instruction.innerHTML = marked.parse(_exercise.instruction);
-    } else {
-      instruction.innerHTML = marked.parse(_exercise.intro);
-    }
+
+    instruction.innerHTML = marked.parse(_question.instruction);
+
     renderMathInElement(instruction, {
       delimiters: [
           {left: '$$', right: '$$', display: true},
@@ -309,8 +322,8 @@ function displayExercise(act) {
       ],
       throwOnError : false
     });
-    if(_exercise.proposal && _exercise.proposal.length > 0) {
-      prog = _exercise.proposal;
+    if(_question.proposal && _question.proposal.length > 0) {
+      prog = _question.proposal;
       document.getElementById('resetbtn').classList.remove('hidden');
     } else {
       document.getElementById('resetbtn').classList.add('hidden');
@@ -318,8 +331,8 @@ function displayExercise(act) {
     let helpBtn = document.getElementById('help');
     let helpPanel = document.getElementById('help-panel');
     helpPanel.innerHTML = '';
-    if(_exercise.help) {
-      let helps = _exercise.help.split(/\n/);
+    if(_question.help) {
+      let helps = _question.help.split(/\n/);
       for(let msg of helps) {
         if(msg.startsWith('* ')) { msg = msg.substring(2, msg.length); }
         let c = document.createElement('div');
@@ -330,14 +343,20 @@ function displayExercise(act) {
     } else {
       helpBtn.classList.add('hidden');
     }
-    let result = _user?.results?.find(r => r.activity_id == _exercise.id);
+    // load last answer
     if(lastprog && lastprog.length) {
       prog = lastprog;
     } else {
-      if (result) {
-        prog = result.response;
-        if (prog.startsWith('"')) {
-          prog = JSON.parse(prog)
+      if (_journey && _journey.results) {
+        const result = _journey.results[_activity.id];
+        if (result && result[_questionIdx]) {
+          const r = result[_questionIdx];
+          if (r.response) {
+            prog = r.response;
+            if (prog && prog.startsWith('"')) {
+              prog = JSON.parse(prog)
+            }
+          }
         }
       }
     }
@@ -349,22 +368,62 @@ function displayExercise(act) {
     instruction.innerHTML = marked.parse('**Bravo !** Tous les exercices de ce niveau sont terminés !');
   }
 
-  displayExercisesNav();
+  displayActivitiesNav();
 }
 
 // Go to next exercise
-function nextExercise() {
+async function nextQuestion() {
   const successOverlay = document.getElementById('overlay');
   successOverlay.classList.add('hidden');
   var outputpre = document.getElementById('output');
   outputpre.innerHTML = ''
   _userOutput = '';
-  _exerciseIdx++;
+
+  // si il reste des questions
+  if (_questionIdx + 1 < _quiz.questions.length) {
+    _questionIdx++;
+  } else {
+    // si il reste des activités
+    let idx = _activityIdx + 1;
+    while (idx < _journey.activities.length) {
+      if (!isDone(_journey, idx)) {
+        await loadActivity(idx);
+        break;
+      }
+      idx++;
+    }
+    // si toutes les activites sont terminees
+    if (idx >= _journey.activities.length) {
+      _activityIdx = -1;
+      _questionIdx = -1;
+    }
+  }
+
   displayExercise();
 }
 
+async function loadActivity(idx, force=false) {
+  _activityIdx = idx;
+  _activity = _journey.activities[idx];
+  if (_activity && _activity.quiz_id) {
+    const results = _journey.results[_activity.id];
+    _quiz = await lcms.fetchQuiz(_activity.quiz_id);
+    _questionIdx = force ? '0' : -1;
+    if (results) {
+      for (let i = 0; i < results.length; i++) {
+        if(!results[i].done) {
+          _questionIdx = i;
+          break;;
+        }
+      }
+    } else {
+      _questionIdx = 0;
+    }
+  }
+}
+
 // Load exercises from remote LCMS
-function loadExercises(level, pushHistory){
+async function loadJourney(level, pushHistory){
   if(!level) { return console.warn('Missing level'); }
   if(!_user && !_skipLogin) {
     return gui.loginWarning();
@@ -372,26 +431,18 @@ function loadExercises(level, pushHistory){
   gui.showLoading();
 
   _journey = _journeys[level-1];
-  _exercises = _journey.activities;
-  _exerciseIdx = -1;
-  if (config.exidx >= 0) {
-    _exerciseIdx = config.exidx;
-  } else if (_user) {
-    for (let i in _exercises) {
-      if (_exerciseIdx < 0) {
-        if (_user.results) {
-          let r = _user.results.find(r => {
-            return r.activity_id == _exercises[i].id;
-          });
-          if(!r || !r.success) {
-            _exerciseIdx = parseInt(i);
-          }
-        }
+  _activityIdx = -1;
+  _questionIdx = -1;
+
+  if (_journey) {
+    for (let i = 0; i < _journey.activities.length; i++) {
+      if (!isDone(_journey, i)) {
+        await loadActivity(i);
+        break;
       }
     }
-  } else {
-    _exerciseIdx = 0;
   }
+
   gui.hideLoading();
   if(pushHistory) {
     history.pushState({'level': level}, '', `/?parcours=${level}`);
@@ -401,9 +452,9 @@ function loadExercises(level, pushHistory){
 
 // Reload initial prog
 function resetProg(){
-  if(_exercise && _exercise.proposal && _exercise.proposal.length > 0) {
+  if(_question && _question.proposal && _question.proposal.length > 0) {
     if(_pythonEditor) {
-      _pythonEditor.setValue(_exercise.proposal);
+      _pythonEditor.setValue(_question.proposal);
     }
   }
 }
@@ -423,7 +474,7 @@ function checkTest(idx) {
 
 // On Python script completion
 function onCompletion(mod) {
-  if (!_exercise) { return; }
+  if (!_question) { return; }
   let nbFailed = _tests.length;
   let table = document.importNode(document.querySelector('#results-table').content, true);
   let lineTemplate = document.querySelector('#result-line');
@@ -486,10 +537,12 @@ function onCompletion(mod) {
           'from': 'python.nsix.fr'
         }, '*');
       } else {
-        const answer = sha256('' + _exercise.id);
-        lcms.registerSuccess(_exercise.id, answer, _pythonEditor.getValue(), (data) => {
-          if (_user.results) {
-            _user.results.push(data);
+        const answer = sha256('' + _question.id);
+        lcms.registerSuccess(_question.id, _activity.id, answer, _pythonEditor.getValue(), (data) => {
+          if(!_journey.results[_activity.id]) {
+            _journey.results[_activity.id] = [data];
+          } else {
+            _journey.results[_activity.id].push(data);
           }
           updateAchievements();
         });
@@ -687,36 +740,13 @@ function registerSkipLogin() {
   _skipLogin = true;
 }
 
-async function loadResults() {
-  let token = lcms.getAuthToken();
-  if(token) {
-    let parcours = [];
-    for (let j of _journeys) {
-      parcours.push(`"${j.code}"`);
-    }
-    const res = await fetch(`${config.lcmsUrl}/resultats/?parcours=[${parcours.join(',')}]`, {
-      'headers': {
-        'Authorization': 'Bearer ' + token
-      }
-    });
-    if (res && res.status === 200) {
-      const results = await res.json()
-      // config.log('Results found', results);
-      return results;
-    }
-    console.error('Unable to fetch results', res);
-    return null;
-  }
-  return null;
-}
-
 function getProgKey(){
   let key = 'prog'
   if(_user) {
     key += '_' + _user.externalId;
   }
-  if(_exercise) {
-    key += '_' + _exercise.id;
+  if(_question) {
+    key += '_' + _question.id;
   }
   return key;
 }
@@ -728,13 +758,8 @@ function updateAchievements() {
     let elt = document.querySelector(`#level-${i} .percent`);
     let total =  _journeys[i-1].activities.length;
     let done = 0;
-    for (let ch of _journeys[i-1].activities){
-      if (_user.results) {
-        let result = _user.results.find(r => r.activity_id == ch.id);
-        if(result && result.success) {
-          done++;
-        }
-      }
+    for (let k in _journeys[i-1].results) {
+      done += _journeys[i-1].results[k].length;
     }
     let percent = 100.0 * done / total;
     let stars = Math.round(percent/20);
@@ -804,24 +829,18 @@ async function init(){
     gfm: true
   });
 
-  if(config.activity) {
-    console.info("Specific activity", config.activity);
-  } else {
-    _journeys = await lcms.fetchJourneys();
-  }
-
   document.getElementById('logoutBtn').addEventListener('click', lcms.logout);
   document.getElementById('runbtn').addEventListener('click', runit);
   document.getElementById('homebtn').addEventListener('click', () => { displayMenu(); history.pushState(null, '', '/'); });
-  document.getElementById('nextbtn').addEventListener('click', nextExercise);
+  document.getElementById('nextbtn').addEventListener('click', nextQuestion);
   document.getElementById('resetbtn').addEventListener('click', resetProg);
   document.getElementById('login').addEventListener('click', login);
   document.getElementById('login2').addEventListener('click', login);
   // document.getElementById('skip-login-btn').addEventListener('click', registerSkipLogin);
-  document.getElementById('level-1').addEventListener('click', () => loadExercises(1, true));
-  document.getElementById('level-2').addEventListener('click', () => loadExercises(2, true));
-  document.getElementById('level-3').addEventListener('click', () => loadExercises(3, true));
-  document.getElementById('level-4').addEventListener('click', () => loadExercises(4, true));
+  document.getElementById('level-1').addEventListener('click', () => loadJourney(1, true));
+  document.getElementById('level-2').addEventListener('click', () => loadJourney(2, true));
+  document.getElementById('level-3').addEventListener('click', () => loadJourney(3, true));
+  document.getElementById('level-4').addEventListener('click', () => loadJourney(4, true));
   document.getElementById('profileMenuBtn').addEventListener('click', gui.toggleMenu);
 
   document.getElementById('help').addEventListener('click', gui.showHelp);
@@ -837,36 +856,42 @@ async function init(){
   });
   addEventListener('popstate', evt => {
     if(evt.state && evt.state.level) {
-      loadExercises(evt.state.level);
+      loadJourney(evt.state.level);
     } else {
       displayMenu();
     }
   });
 
   lcms.loadUser(async (user) => {
+    let loaded = false;
     // TODO session cache
     if(user) {
       _user = user;
       document.getElementById('username').innerHTML = user.firstName || 'Moi';
       document.getElementById('profile-menu').classList.remove('hidden');
-      if (!config.activity) {
-        _user.results = await loadResults();
+
+      if (config.activity) {
+        console.info("Specific activity", config.activity);
+        _activity = await lcms.fetchActivity(config.activity);
+        if (_activity && _activity.quiz) {
+          _quiz = _activity.quiz;
+        }
+        displayExercise();
+        loaded = true;
+      } else {
+        _journeys = await lcms.fetchJourneys();
+        // _user.results = await lcms.fetchResults(_journeys);
         updateAchievements();
+        if(config.parcours >= 0) {
+          loadJourney(config.parcours);
+          loaded = true;
+        }
       }
     } else {
       document.getElementById('login').classList.remove('hidden');
       _user = null;
     }
 
-    let loaded = false;
-    if (config.activity) {
-      let act = await lcms.fetchActivity(config.activity);
-      displayExercise(act);
-      loaded = true;
-    } else if (config.parcours >= 0) {
-      loadExercises(config.parcours);
-      loaded = true;
-    }
     if(!loaded) { displayMenu(); }
     gui.hideLoading();
   });

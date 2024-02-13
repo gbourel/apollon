@@ -58,11 +58,11 @@ export const lcms = {
       cb(null);
     }
   },
-  fetchJourney: (jid) => {
-    const token = lcms.getAuthToken();
+  fetchJourney: (code) => {
     return new Promise((resolve, reject) => {
-      const req = new Request(`${jid}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const token = lcms.getAuthToken();
+      const req = new Request(`${config.lcmsUrl}/parcours/code/${code}`, {
+        'headers': { 'Authorization': `Bearer ${token}` }
       });
       fetch(req).then(res => { return res.json(); })
       .then(journey => {
@@ -72,47 +72,60 @@ export const lcms = {
   },
   fetchJourneys: async () => {
     let res = [];
-    let jids = [
-      `${config.lcmsUrl}/parcours/code/EXNZJN`, // Initiation
-      `${config.lcmsUrl}/parcours/code/NZGTIQ`, // 1ere
-      `${config.lcmsUrl}/parcours/code/KIYYTB`, // Tale
-      `${config.lcmsUrl}/parcours/code/WHISRQ`  // Jeu 2D "pirates"
+    let codes = [
+      'EXNZJN', // Initiation
+      'NZGTIQ', // 1ere
+      'KIYYTB', // Tale
+      'WHISRQ'  // Jeu 2D "pirates"
     ];
-    for (let jid of jids) {
-      res.push(await lcms.fetchJourney(jid));
+    for (let code of codes) {
+      res.push(await lcms.fetchJourney(code));
     }
     return res
   },
   fetchActivity: (actId) => {
-    const token = lcms.getAuthToken();
     return new Promise((resolve, reject) => {
+      const token = lcms.getAuthToken();
       const req = new Request(`${config.lcmsUrl}/activity/${actId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       fetch(req).then(res => { return res.json(); })
-      .then(act => {
+      .then(async act => {
+        const res = await fetch(`${config.lcmsUrl}/quiz/${act.quiz_id}`);
+        act.quiz = await res.json();
         resolve(act);
       });
     });
   },
+  fetchQuiz: (quizId) => {
+    return new Promise((resolve, reject) => {
+      const token = lcms.getAuthToken();
+      const req = new Request(`${config.lcmsUrl}/quiz/${quizId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      fetch(req).then(res => { return res.json(); })
+      .then(async quiz => {
+        resolve(quiz);
+      });
+    });
+  },
   // Send succes to lcms api
-  registerSuccess: (activityId, answer, content, cb) => {
+  registerSuccess: (questionId, activityId, answer, content, cb) => {
     if (config.preview) {
       return console.info('Preview mode: no success registration');
     }
     const token = lcms.getAuthToken();
     if(token) {
       const body = {
+        question_id: questionId,
         activity_id: activityId,
         duration: 0,
         success: true,
         response: content
       };
       // FIXME start_time end_time duration attempts
-      const req = new Request(`${config.lcmsUrl}/activity/${activityId}`,  {
-        method: 'POST',
+      const req = new Request(`${config.lcmsUrl}/resultats/save/question`,  {
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
