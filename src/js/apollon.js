@@ -1,4 +1,4 @@
-const VERSION = 'v0.14.0';
+const VERSION = 'v0.14.1';
 document.getElementById('version').textContent = VERSION;
 
 import { marked } from 'marked';
@@ -292,6 +292,7 @@ function displayExercise() {
   // help.classList.remove('hidden'); TODO
   pgcanvas.classList.add('hidden');
   output.classList.add('md:w-1/2');
+  output.innerHTML = ''
 
   if (_quiz.questions) {
     _question = _quiz.questions[_questionIdx];
@@ -375,7 +376,7 @@ function displayExercise() {
 async function nextQuestion() {
   const successOverlay = document.getElementById('overlay');
   successOverlay.classList.add('hidden');
-  var outputpre = document.getElementById('output');
+  const outputpre = document.getElementById('output');
   outputpre.innerHTML = ''
   _userOutput = '';
 
@@ -450,6 +451,26 @@ async function loadJourney(level, pushHistory){
   displayExercise();
 }
 
+async function handleMessage(msg) {
+  if (!_activity || (msg.data.activity && msg.data.activity !== _activity.id)) {
+    _activity = await lcms.fetchActivity(msg.data.activity);
+    if (_activity && _activity.quiz) {
+      _quiz = _activity.quiz;
+    }
+  }
+  if (_quiz && _quiz.questions && msg.data.question < _quiz.questions.length) {
+    const instruction = document.getElementById('instruction');
+    _questionIdx = msg.data.question;
+    displayExercise();
+  } else {
+    const instruction = document.getElementById('instruction');
+    instruction.innerHTML = '<div class="error">🔍️ Erreur : question non trouvée.</div>';
+    console.warn(msg.data.question, _quiz.questions);
+  }
+
+}
+window.addEventListener('message', handleMessage, false);
+
 // Reload initial prog
 function resetProg(){
   if(_question && _question.proposal && _question.proposal.length > 0) {
@@ -460,6 +481,7 @@ function resetProg(){
 }
 
 function checkTest(idx) {
+  if (idx >= _output.length) { return false; }
   let test = _tests[idx];
   if(test.python == "USER_OUTPUT") {
     let uo = _userOutput.replace(/(?:\r\n|\r|\n)/g, ' ');
@@ -480,17 +502,17 @@ function onCompletion(mod) {
   let lineTemplate = document.querySelector('#result-line');
   let hasHelp = false;
   _tests.forEach(t => {
-    if (t && t.option && t.option !== 'hide') { hasHelp = true; }
+    if (t && t.option && (t.option.toLowerCase() !== 'hide')) { hasHelp = true; }
     if (t && t.live && t.fn === 'call' && Sk.callCount[t.global] >= t.value) {
       t.passed = true;
     }
   });
   table.querySelector('thead td.aide').style.display = hasHelp ? 'table-cell' : 'none';
-  if(_tests.length > 0 && _tests.length === _output.length) {
+  if(_tests.length > 0) {
     nbFailed = 0;
     for (let i = 0 ; i < _tests.length; i++) {
       let line = null;
-      if(_tests[i].option !== 'hide') {
+      if(_tests[i].option.toLowerCase() !== 'hide') {
         line = document.importNode(lineTemplate.content, true);
         let cells = line.querySelectorAll('td');
         if (_tests[i].python === 'USER_OUTPUT') {
@@ -504,7 +526,11 @@ function onCompletion(mod) {
         } else {
           cells[0].textContent = _tests[i].python;
           cells[1].textContent = _tests[i].value.trim();
-          cells[2].textContent = _tests[i].live ? _tests[i].passed : _output[i].trim();
+          if (i < _output.length) {
+            cells[2].textContent = _tests[i].live ? _tests[i].passed : _output[i].trim();
+          } else {
+            cells[2].textContent = "Erreur, valeur non trouvée";
+          }
         }
         if(hasHelp) {
           cells[3].textContent = _tests[i].option;
@@ -569,7 +595,7 @@ function onCompletion(mod) {
     }
   }
   elt.innerHTML += `<div class="result">${content}</div>`;
-  if(_tests.find(t => t.option !== 'hide')){
+  if(_tests.find(t => (!t.option || t.option.toLowerCase() !== 'hide'))){
     elt.appendChild(table);
   }
   document.getElementById('output').appendChild(elt);
@@ -870,17 +896,17 @@ async function init(){
       document.getElementById('username').innerHTML = user.firstName || 'Moi';
       document.getElementById('profile-menu').classList.remove('hidden');
 
-      if (config.activity) {
-        console.info("Specific activity", config.activity);
-        _activity = await lcms.fetchActivity(config.activity);
-        if (_activity && _activity.quiz) {
-          _quiz = _activity.quiz;
-        }
-        displayExercise();
+      if (config.activity || config.embedded) {
+        console.info("Embedded activity");
+        const menu = document.getElementById('mainmenu');
+        menu.style.display = 'none';
+        window.parent.window.postMessage({
+          'state': '__intialized__',
+          'from': 'python.nsix.fr'
+        }, '*');
         loaded = true;
       } else {
         _journeys = await lcms.fetchJourneys();
-        // _user.results = await lcms.fetchResults(_journeys);
         updateAchievements();
         if(config.parcours >= 0) {
           loadJourney(config.parcours);
