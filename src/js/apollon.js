@@ -512,7 +512,7 @@ function onCompletion(mod) {
     nbFailed = 0;
     for (let i = 0 ; i < _tests.length; i++) {
       let line = null;
-      if(_tests[i].option.toLowerCase() !== 'hide') {
+      if(!_tests[i].option || _tests[i].option.toLowerCase() !== 'hide') {
         line = document.importNode(lineTemplate.content, true);
         let cells = line.querySelectorAll('td');
         if (_tests[i].python === 'USER_OUTPUT') {
