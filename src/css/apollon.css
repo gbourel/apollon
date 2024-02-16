@@ -1220,9 +1220,16 @@ ul {
 #instruction table {
   margin: 0.5rem 0rem;
 }
-#instruction table th {
-  padding: 0.8rem 0.8rem;
+#instruction table th,
+#instruction table td {
+  padding: 0.4rem;
   border: 1px solid #777;
+}
+#instruction table th  {
+  font-weight: 600;
+}
+#instruction table td {
+  font-weight: 400;
 }
 #instruction p {
   margin-top: 0.8rem;
