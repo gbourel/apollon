@@ -407,7 +407,10 @@ async function loadActivity(idx, force=false) {
   _activityIdx = idx;
   _activity = _journey.activities[idx];
   if (_activity && _activity.quiz_id) {
-    const results = _journey.results[_activity.id];
+    const results = null;
+    if(_journey.results) {
+      _journey.results[_activity.id];
+    }
     _quiz = await lcms.fetchQuiz(_activity.quiz_id);
     _questionIdx = force ? '0' : -1;
     if (results) {
