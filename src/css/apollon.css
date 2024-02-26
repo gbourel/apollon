@@ -1374,6 +1374,9 @@ span.katex {
   display: flex;
 }
 
+#turtlecanvas {
+  background: #f2f2f2;
+}
 
 
 .hover\:shadow-2xl:hover {
