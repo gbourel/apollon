@@ -723,11 +723,11 @@ async function runit() {
   _output = [];
   _userOutput = '';
   _over = false;
-  if(prog.startsWith('import turtle')) {
+  if(prog.includes('import turtle')) {
     document.getElementById('turtlecanvas').classList.remove('hidden');
     outputElt.style.width = '100%';
   }
-  if(prog.startsWith('import webgl')) {
+  else if(prog.includes('import webgl')) {
     document.getElementById('webglcanvas').classList.remove('hidden');
     outputElt.style.width = '100%';
   }
