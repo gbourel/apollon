@@ -1109,6 +1109,7 @@ header {
 #mainmenu h3 {
   font-size: inherit;
   font-weight: normal;
+  user-select: none;
 }
 .c-card {
   cursor: pointer;
@@ -1142,6 +1143,9 @@ header {
 /* Src / Output */
 #output {
   min-height: 18rem;
+}
+#output pre {
+  line-height: 1rem;
 }
 .error {
   color: #EE4444;

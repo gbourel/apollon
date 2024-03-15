@@ -614,7 +614,7 @@ function outf(text) {
     _output.push(text.substring(12).trim());
   } else {
     _userOutput += text;
-    document.getElementById('output').innerHTML += `<div>${text}</div>`;
+    document.getElementById('output').innerHTML += `<pre>${text}</pre>`;
   }
 }
 
