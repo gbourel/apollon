@@ -1,4 +1,4 @@
-const VERSION = 'v0.14.2';
+const VERSION = 'v0.14.3';
 document.getElementById('version').textContent = VERSION;
 
 import { marked } from 'marked';
@@ -714,7 +714,8 @@ async function runit() {
   Sk.configure({
     output: outf,
     read: builtinRead,
-    __future__: Sk.python3
+    __future__: Sk.python3,
+    inputfunTakesPrompt: true
   });
   prog += "\nprint('### END_OF_USER_INPUT ###')\n";
   for (let t of _tests) {
