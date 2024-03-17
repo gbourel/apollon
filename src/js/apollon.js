@@ -1,4 +1,4 @@
-const VERSION = 'v0.14.1';
+const VERSION = 'v0.14.2';
 document.getElementById('version').textContent = VERSION;
 
 import { marked } from 'marked';
@@ -483,6 +483,12 @@ function resetProg(){
   }
 }
 
+/* Format test value (replace \n by new lines and trim). */
+function formatTestValue(val) {
+  val = val.replace(/(?<!\\)\\n/g, '\n');
+  return val.trim()
+}
+
 function checkTest(idx) {
   if (idx >= _output.length) { return false; }
   let test = _tests[idx];
@@ -494,7 +500,7 @@ function checkTest(idx) {
     let lines = _pythonEditor.getValue().trim().split(/\r\n|\r|\n/).length;
     return lines <= test.value;
   }
-  return test.value.trim() === _output[idx].trim();
+  return formatTestValue(test.value) === _output[idx].trim();
 }
 
 // On Python script completion
@@ -528,7 +534,7 @@ function onCompletion(mod) {
           cells[2].textContent = _pythonEditor.getValue().trim().split(/\r\n|\r|\n/).length;
         } else {
           cells[0].textContent = _tests[i].python;
-          cells[1].textContent = _tests[i].value.trim();
+          cells[1].textContent = formatTestValue(_tests[i].value);
           if (i < _output.length) {
             cells[2].textContent = _tests[i].live ? _tests[i].passed : _output[i].trim();
           } else {
