@@ -1,10 +1,14 @@
 import { config } from './config.js';
 
+const TOKCOOKIE = 'usrssot';
+
+const debug = console.log; //() => {};
+
 export const lcms = {
   getAuthToken: () => {
     let token = null;
     if(document.cookie) {
-      const name = 'neossot='
+      const name = `${TOKCOOKIE}=`
       let cookies = decodeURIComponent(document.cookie).split(';');
       for (let c of cookies) {
         if(token == null) {
@@ -18,7 +22,7 @@ export const lcms = {
     return token;
   },
   logout: (reload=true) => {
-    const cookies = ['neossot'];
+    const cookies = [`${TOKCOOKIE}`];
     for (let cookie of cookies) {
       document.cookie=`${cookie}=; domain=${config.cookieDomain}; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
     }
@@ -28,6 +32,7 @@ export const lcms = {
   },
   loadUser: (cb) => {
     let token = lcms.getAuthToken();
+    debug('Load user', token);
     if(token) {
       try {
         const meUrl = `${config.lcmsUrl}/auth/userinfo`;
@@ -44,6 +49,7 @@ export const lcms = {
           }
           return lcms.logout(false);
         }).then(data => {
+          debug('data', data);
           cb(data);
         }).catch(err => {
           console.warn('Unable to fetch user', err);
@@ -59,6 +65,7 @@ export const lcms = {
     }
   },
   fetchJourney: (code) => {
+    console.info('fetchJourney', code);
     return new Promise((resolve, reject) => {
       const token = lcms.getAuthToken();
       const req = new Request(`${config.lcmsUrl}/parcours/code/${code}`, {
