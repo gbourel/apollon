@@ -1,4 +1,4 @@
-const VERSION = 'v0.14.3';
+const VERSION = 'v0.14.4';
 document.getElementById('version').textContent = VERSION;
 
 import { marked } from 'marked';
@@ -903,7 +903,7 @@ async function init(){
     // TODO session cache
     if(user) {
       _user = user;
-      document.getElementById('username').innerHTML = user.firstName || 'Moi';
+      document.getElementById('username').innerHTML = user.firstname || 'Moi';
       document.getElementById('profile-menu').classList.remove('hidden');
 
       if (config.activity || config.embedded) {
