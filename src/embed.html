@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <title>Apollon</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="/lib/katex/katex.min.css">
+  <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="/lib/codemirror/monokai.css">
+  <link rel="stylesheet" href="./css/apollon.css">
+
+  <script src="/lib/skulpt/skulpt.min.js" type="text/javascript"></script>
+  <script src="/lib/skulpt/skulpt-stdlib.js" type="text/javascript"></script>
+  <script src="/lib/sha1.js" type="text/javascript"></script>
+  <script src="/lib/sha256.js" type="text/javascript"></script>
+  <script src="/lib/codemirror/codemirror.js"></script>
+  <script src="/lib/codemirror/python.js"></script>
+  <script src="/lib/katex/katex.min.js"></script>
+  <script src="/lib/katex/auto-render.min.js"></script>
+  <script src="/lib/snap.svg-min.js"></script>
+  <script async src="./js/embedded.js" type="module"></script>
+
+  <style>
+    body {
+      background: none;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    main > div.flex {
+      flex-grow: 2;
+    }
+    #version {
+      opacity: .4;
+    }
+  </style>
+</head>
+<body class="text-white">
+  <div id="loading" class="z-20">
+    <img src="img/python.png" alt="Logo Python">
+  </div>
+
+  <main id="main">
+    <div class="flex flex-wrap">
+      <div id="pythonsrc"
+        class="w-full md:w-1/2 font-mono text-sm bg-gray-900 rounded text-green-400 border-2 border-zinc-500 resize-none">
+      </div>
+      <!-- If you want turtle graphics include a canvas -->
+      <div id="turtlecanvas" class="hidden w-full md:w-1/2"></div>
+      <!-- Same for pygame -->
+      <canvas id="pygamecanvas" class="hidden w-full md:w-1/2" tabindex="1"></canvas>
+      <!-- <canvas id="webglcanvas" height="248" width="400" class="w-full md:w-1/2"></canvas> -->
+      <div class="w-full md:w-1/2 font-mono text-sm border-2 bg-stone-100 text-green-900 border-zinc-500 p-2" id="output"></div>
+    </div>
+    <div>
+      <button id="runbtn" class="bg-blue-500 rounded my-2 p-2 shadow-md" type="button">Run</button>
+      <button id="resetbtn" class="bg-purple-700 rounded mx-4 my-2 p-2 shadow-md disabled:bg-gray-600 disabled:text-gray-400" type="button">Réinitialiser</button>
+    </div>
+  </main>
+
+
+  <div id="overlay" class="hidden">
+    <img src="img/success.svg">
+    <div class="done">
+      <div class="done-msg">Bravo, un grand succès !</div>
+      <div class="done-sub">
+        <button id="nextbtn" class="bg-blue-500 rounded px-2 text-slate-100 shadow-lg" type="button">Au suivant</button>
+      </div>
+    </div>
+  </div>
+  <div id="help-panel" class="hidden-right"></div>
+  <span id="version"></span>
+
+  <template id="results-table">
+    <table>
+      <thead>
+        <tr>
+          <td>Test</td>
+          <td>Attendu</td>
+          <td>Obtenu</td>
+          <td class="aide">Aide</td>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </template>
+  <template id="result-line">
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </template>
+
+  </body>
+
+</html>

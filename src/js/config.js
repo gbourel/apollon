@@ -3,6 +3,8 @@ export const config = {
   nsixLoginUrl: 'https://www.nsix.fr/login',
   lcmsUrl: 'https://lcms2.nsix.fr/api',
   cookieDomain: '.nsix.fr',
+  // if in iframe (i.e. nsix challenge)
+  nsix: window.location !== window.parent.location,
   log: () => {},
 
   debug: false,
