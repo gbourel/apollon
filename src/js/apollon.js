@@ -1,4 +1,4 @@
-const VERSION = 'v0.15.0';
+const VERSION = 'v0.15.3';
 document.getElementById('version').textContent = VERSION;
 
 import { marked } from 'marked';

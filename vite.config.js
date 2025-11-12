@@ -11,6 +11,12 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
-    minify: 'terser'
+    minify: 'terser',
+    rollupOptions: {
+      input: {
+        main: 'src/index.html',
+        embed: 'src/embed.html'
+      },
+    }
   }
 })
